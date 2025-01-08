@@ -1,0 +1,12 @@
+{
+  "compilerOptions": {
+    "outDir": "./out-tsc",
+    "rootDir": "./",
+    "module": "commonjs",
+    "target": "es2020",
+    "noEmitOnError": false
+  },
+  "include": [
+    "electron/*.ts"
+  ]
+}

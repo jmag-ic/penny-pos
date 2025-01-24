@@ -1,12 +1,12 @@
-import { Pipe, PipeTransform } from '@angular/core';
+import { inject, Pipe, PipeTransform } from '@angular/core';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 
 @Pipe({
   name: 'highlightText'
 })
 export class HighlightTextPipe implements PipeTransform {
-
-  constructor(private sanitizer: DomSanitizer) {}
+  // Inject DomSanitizer to bypass security
+  private sanitizer = inject(DomSanitizer);
 
   transform(value: string, boldWords: string[]): SafeHtml {
     // Return original text if no boldWords provided
@@ -16,6 +16,7 @@ export class HighlightTextPipe implements PipeTransform {
     
     // Match whole words case-insensitively
     const regex = new RegExp(`(${boldWords.join('|')})`, 'gi');
+    
     // Wrap matches in <b> tags
     const highlighted = value.replace(regex, '<b>$1</b>');
     

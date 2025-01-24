@@ -6,7 +6,7 @@ import { NzListModule } from "ng-zorro-antd/list";
 import { NzTagModule } from "ng-zorro-antd/tag";
 import { NzIconModule } from "ng-zorro-antd/icon";
 
-import { HighlightTextPipe } from "../pipes/highlight-words.pipe";
+import { HighlightTextPipe } from "../shared/highlight-words-pipe";
 import { Product } from "../api/model";
 
 @Component({
@@ -75,7 +75,7 @@ import { Product } from "../api/model";
     }
   `]
 })
-export class ProductItemComponent implements Highlightable {
+export class ProductItem implements Highlightable {
   // Inputs
   @Input() item!: Product;
   @Input() disabled?: boolean | undefined;

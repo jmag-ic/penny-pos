@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, ElementRef, OnDestroy, output, QueryList, signal, ViewChild, ViewChildren } from "@angular/core";
+import { AfterViewInit, Component, ElementRef, inject, OnDestroy, output, QueryList, signal, ViewChild, ViewChildren } from "@angular/core";
 import { ActiveDescendantKeyManager } from "@angular/cdk/a11y";
 import { Subscription } from "rxjs";
 
@@ -8,9 +8,9 @@ import { NzInputModule } from "ng-zorro-antd/input";
 import { NzListModule } from "ng-zorro-antd/list";
 import { NzSpinModule } from "ng-zorro-antd/spin";
 
-import { ProductItemComponent } from "./product-item";
-import { InputCleanerDirective } from "../directives/input-cleaner";
-import { InputDebouncerDirective } from "../directives/input-debouncer";
+import { ProductItem } from "./product-item";
+import { InputCleaner } from "../shared/input-cleaner";
+import { InputDebouncer } from "../shared/input-debouncer";
 
 import { ElectronApi } from "../api/electron.api";
 import { Product } from "../api/model";
@@ -23,9 +23,9 @@ import { Product } from "../api/model";
     NzInputModule,
     NzListModule,
     NzSpinModule,
-    ProductItemComponent,
-    InputCleanerDirective,
-    InputDebouncerDirective
+    ProductItem,
+    InputCleaner,
+    InputDebouncer
   ],
   template: `
     <nz-input-group nzSearch [nzAddOnAfter]="suffixIconButton">
@@ -34,10 +34,10 @@ import { Product } from "../api/model";
         type="text"
         placeholder="Buscar producto..."
         nz-input
-        posInputDebouncer
-        posInputCleaner
+        pos-input-debouncer
+        pos-input-cleaner
         (keydown)="onInputSearchKeyDown($event)"
-        (textChange)="onInputSearchTextChange($event)"
+        (textChanged)="onInputSearchTextChange($event)"
       />
     </nz-input-group>
     
@@ -83,34 +83,34 @@ import { Product } from "../api/model";
     }
   `]
 })
-export class ProductFinderComponent implements AfterViewInit, OnDestroy {
-
+export class ProductFinder implements AfterViewInit, OnDestroy {
   // Template references
-  @ViewChildren(ProductItemComponent)
-  queryListItems!: QueryList<ProductItemComponent>;
+  @ViewChildren(ProductItem)
+  queryListItems!: QueryList<ProductItem>;
   
   @ViewChild('searchInput')
-  inputSearch!: ElementRef;
+  searchInput!: ElementRef;
 
   // Outputs
-  readonly selectProduct = output<Product>();
+  readonly productSelected = output<Product>();
 
-  // Component state (signals)
+  // Injected services
+  private api = inject(ElectronApi);
+
+  // Component state
   readonly searchWords = signal<string[]>([]);
   readonly products = signal<Product[]>([]);
   readonly searching = signal<boolean>(false);
 
   // Key manager
-  private keyManager!: ActiveDescendantKeyManager<ProductItemComponent>; 
+  private keyManager!: ActiveDescendantKeyManager<ProductItem>; 
   private queryListSub!: Subscription;
 
-  constructor(private api: ElectronApi) {}
-
   ngAfterViewInit() {
-    // Initialize key manager on query list items change
-    this.queryListSub = this.queryListItems.changes.subscribe((listItems: QueryList<ProductItemComponent>) => {
+    // (Re)Initialize key manager on query list items change
+    this.queryListSub = this.queryListItems.changes.subscribe((listItems: QueryList<ProductItem>) => {
       this.keyManager = new ActiveDescendantKeyManager(listItems).withWrap();
-      setTimeout(()=>this.keyManager.setFirstItemActive(), 0);
+      setTimeout(() => this.keyManager.setFirstItemActive(), 0);
     });
   }
 
@@ -121,17 +121,23 @@ export class ProductFinderComponent implements AfterViewInit, OnDestroy {
 
   // onInputSearchKeyDown method handles keydown events on the search input
   onInputSearchKeyDown(event: KeyboardEvent) {
-    if (this.keyManager) {
-      if (event.code === 'Enter' && this.keyManager.activeItem) {
-        this._selectProduct(this.keyManager.activeItem.item);
-      } else {
-        this.keyManager.onKeydown(event);
-      }
+    // Only handle keydown events if the key manager is initialized
+    if (!this.keyManager) {
+      return;
+    }
+    
+    // Handle Enter key to select the active item
+    if (event.code === 'Enter' && this.keyManager.activeItem) {
+      this.selectProduct(this.keyManager.activeItem.item);
+    } else {
+      // Delegate other keydown events to the key manager
+      this.keyManager.onKeydown(event);
     }
   }
 
   // onInputSearchTextChange method handles text changes(emitted by input debouncer directive) on the search input
   onInputSearchTextChange(text: string) {
+    // If no text is provided, clear the products list
     if (!text) {
       if (this.products().length > 0) {
         this.products.set([]);
@@ -160,14 +166,14 @@ export class ProductFinderComponent implements AfterViewInit, OnDestroy {
 
   // onItemClick method handles click events on product items
   onItemClick(item: Product) {
-    this._selectProduct(item);
+    this.selectProduct(item);
   }
 
   // onItemMouseMove method handles mousemove events on product items
   onItemMouseMove(index: number) {
     // Focus the search input if it is not focused
-    if (document.activeElement !== this.inputSearch.nativeElement) {
-      this.inputSearch.nativeElement.focus();
+    if (document.activeElement !== this.searchInput.nativeElement) {
+      this.searchInput.nativeElement.focus();
     }
 
     // Set the active item on the key manager if it is not already set
@@ -176,10 +182,10 @@ export class ProductFinderComponent implements AfterViewInit, OnDestroy {
     }
   }
 
-  // _selectProduct method emits the selectProduct event and resets the component state
-  private _selectProduct(item: Product) {
-    this.selectProduct.emit(item);
+  // selectProduct method emits the selectProduct event and resets the component state
+  private selectProduct(item: Product) {
+    this.productSelected.emit(item);
     this.products.set([]);
-    this.inputSearch.nativeElement.value = '';
+    this.searchInput.nativeElement.value = '';
   }
 }

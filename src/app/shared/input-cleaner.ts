@@ -2,15 +2,15 @@ import { Directive, ElementRef, OnDestroy } from '@angular/core';
 import { filter, fromEvent, Subscription } from 'rxjs';
 
 @Directive({
-  selector: 'input[posInputCleaner]'
+  selector: 'input[pos-input-cleaner]'
 })
-export class InputCleanerDirective implements OnDestroy {
+export class InputCleaner implements OnDestroy {
   // The subscription to the keydown event
-  private keyDownSubs: Subscription;
+  private keyDownSub: Subscription;
 
   constructor(input: ElementRef<HTMLInputElement>) {
     // Clear the input value when the user presses the escape key
-    this.keyDownSubs =  fromEvent(input.nativeElement, 'keydown').pipe(
+    this.keyDownSub =  fromEvent(input.nativeElement, 'keydown').pipe(
       filter(event => (<KeyboardEvent>event).code === 'Escape')
     ).subscribe(() => {
       input.nativeElement.value = '';
@@ -19,6 +19,6 @@ export class InputCleanerDirective implements OnDestroy {
 
   // Unsubscribe from the keydown event when the directive is destroyed
   ngOnDestroy() {
-    this.keyDownSubs.unsubscribe();
+    this.keyDownSub.unsubscribe();
   }
 }

@@ -2,15 +2,15 @@ import { Directive, ElementRef, input, OnDestroy, output } from '@angular/core';
 import { debounce, distinctUntilChanged, fromEvent, interval, map, Subscription } from 'rxjs';
 
 @Directive({
-  selector: 'input[type=text][posInputDebouncer]'
+  selector: 'input[type=text][pos-input-debouncer]'
 })
-export class InputDebouncerDirective implements OnDestroy {
+export class InputDebouncer implements OnDestroy {
   // Inputs
-  readonly time = input<number>(400);
-  readonly minLen = input<number>(2);
+  readonly debounceTime = input<number>(400);
+  readonly textLength = input<number>(3);
 
   // Outputs
-  readonly textChange = output<string>();
+  readonly textChanged = output<string>();
 
   // The subscription to the keyup event
   private keyUpSub: Subscription;
@@ -21,12 +21,12 @@ export class InputDebouncerDirective implements OnDestroy {
       // Get the value of the input element and trim it
       map(event => ((<KeyboardEvent>event).target as HTMLInputElement).value.trim()),
       // If the text is less than 3 characters, emit an empty string
-      map((text: string) => text.length > this.minLen() ? text : ''),
+      map((text: string) => text.length >= this.textLength() ? text : ''),
       // Debounce the emission if the text is not empty
-      debounce(text => interval(text ? this.time(): 0)),
+      debounce(text => interval(text ? this.debounceTime(): 0)),
       // Only emit the text if it is different from the previous one
       distinctUntilChanged()
-    ).subscribe(text => this.textChange.emit(text));
+    ).subscribe(text => this.textChanged.emit(text));
   }
 
   // Unsubscribe from the keyup event when the directive is destroyed

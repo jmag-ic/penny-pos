@@ -1,7 +1,7 @@
 import { computed, inject } from '@angular/core';
 import { patchState, signalStore, withComputed, withMethods, withState } from '@ngrx/signals';
 
-import { ElectronApi } from '../api';
+import { Api } from '../api';
 import { Product } from "../api/models"
 
 type TicketItem = {
@@ -27,73 +27,102 @@ const initialState: CashRegisterState = {
 
 export const CashRegisterStore = signalStore(
   { providedIn: 'root' },
+  
   withState(initialState),
+
   withComputed((state) => ({
+    // Total amount of the ticket
     total: computed(() => state.ticket().reduce((total, item) => total + item.total, 0)),
-    searchWords: computed(() => state.searchText().split(' ').map(word => word.trim()))
+
+    // Search words from the search text
+    searchWords: computed(() => state.searchText()
+      .split(' ')
+      .map((word) => word.trim())
+      .filter((word) => word.length > 0)
+    )
   })),
-  withMethods((store, api = inject(ElectronApi))=>({
-    async searchProducts(searchText: string) {
-      let products = [];
 
-      if (searchText) {
-        // Update the state with the search text and start the searching flag
-        patchState(store, (state) => ({
-          ...state,
-          searchText,
-          searching: true
-        }));
-
-        // Call the API to search for products
-        products = await api.getProducts(searchText);
-      }
-
-      // Update the state with the search results and stop the searching flag
-      patchState(store, (state) => ({
-        ...state,
-        products: products,
-        searching: false,
-      }));
-    },
-
-    async addProduct(product: Product) {
-      // Find the product in the ticket
-      const item = store.ticket().find((item) => item.product.id === product.id);
-
-      // If the product is already in the ticket, update the quantity and total
-      if (item) {
-        patchState(store, (state) => ({
-          ...state,
-          ticket: state.ticket.map((item) =>
-            item.product.id === product.id
-              ? { ...item, quantity: item.quantity + 1, total: (item.quantity + 1) * item.price }
-              : item
-          )
-        }));
-
-      } else {
-        // If the product is not in the ticket, add it
-        patchState(store, (state) => ({
-          ...state,
-          ticket: [
-            ...state.ticket,
-            {
-              product,
-              quantity: 1,
-              price: product.price,
-              total: product.price
+  withMethods((store, api = inject(Api)) => {
+    // Helper methods
+    // Find a ticket item by product id
+    const findTicketItem = (id: number) => store.ticket().find((item) => item.product.id === id)
+    
+    // Update an existing item in the ticket
+    const updateTicketItem = (ticket: TicketItem[], product: Product, quantity: number) => 
+      ticket.map((item) =>
+        item.product.id === product.id
+          ? {
+              ...item,
+              quantity: quantity,
+              total: quantity * item.price,
             }
-          ]
-        }));
-      }
-    },
+          : item
+      );
 
-    async removeProduct(product: Product) {
-      // Remove the product from the ticket
-      patchState(store, (state) => ({
-        ...state,
-        ticket: state.ticket.filter((item) => item.product.id !== product.id)
-      }));
-    },
-  }))
-)
+    // Add a new item to the ticket
+    const addTicketItem = (ticket: TicketItem[], product: Product) => [
+      ...ticket,
+      {
+        product,
+        quantity: 1,
+        price: product.price,
+        total: product.price,
+      },
+    ];
+
+    // Store methods
+    return {
+      addTicketItem(product: Product) {
+        // Check if the product is already in the ticket
+        const existingItem = findTicketItem(product.id);
+
+        // Get the updated ticket with a new item or an updated item quantity
+        const updatedTicket = existingItem
+          ? updateTicketItem(store.ticket(), product, existingItem.quantity + 1)
+          : addTicketItem(store.ticket(), product);
+
+        // Update the ticket 
+        patchState(store, { ticket: updatedTicket });
+      },
+
+      clearTicket() {
+        patchState(store, { ticket: [] });
+      },
+
+      removeTicketItem(product: Product) {
+        patchState(store, (state) => ({
+          ticket: state.ticket.filter((item) => item.product.id !== product.id)
+        }));
+      },
+
+      async searchProducts(searchText: string) {
+        // Update the search text and set the searching flag
+        patchState(store, { searchText, searching: !!searchText });
+
+        // If the search text is empty, clear the products and return
+        if (!searchText) {
+          patchState(store, { products: [], searching: false });
+          return;
+        }
+
+        // Fetch products from the API
+        try {
+          const products = await api.getProducts(searchText);
+          patchState(store, { products, searching: false });
+          
+        } catch (error) {
+          console.error('Error fetching products:', error);
+          patchState(store, { searching: false });
+        }
+      },
+
+      updateTicketItem(product: Product, quantity: number) {
+        // Get the updated ticket with the new quantity
+        const updatedTicket = updateTicketItem(store.ticket(), product, quantity);
+
+        // Update the ticket
+        patchState(store, { ticket: updatedTicket });
+      }
+    }
+  })
+);

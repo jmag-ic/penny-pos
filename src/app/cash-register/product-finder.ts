@@ -12,7 +12,6 @@ import { ProductItem } from "./product-item";
 import { InputCleaner } from "../shared/input-cleaner";
 import { InputDebouncer } from "../shared/input-debouncer";
 
-import { Product } from "../api/models";
 import { CashRegisterStore } from "./store";
 
 @Component({
@@ -37,8 +36,8 @@ import { CashRegisterStore } from "./store";
         pos-input-debouncer
         pos-input-cleaner
         [value]="store.searchText()"
-        (keydown)="onInputSearchKeyDown($event)"
-        (textChanged)="onInputSearchTextChange($event)"
+        (keydown)="handleInputSearchKeyDown($event)"
+        (textChanged)="store.searchProducts($event)"
       />
     </nz-input-group>
     
@@ -58,8 +57,8 @@ import { CashRegisterStore } from "./store";
         @for (product of store.products(); track product.id; let itemIndex = $index) {
           <pos-product-item
             [item]="product"
-            (mousemove)="onItemMouseMove(itemIndex)"
-            (click)="onItemClick(product)" />
+            (mousemove)="handleItemMouseMove(itemIndex)"
+            (click)="store.addTicketItem(product)" />
         }
         @if (store.products().length === 0) {
           <nz-list-empty />
@@ -111,8 +110,8 @@ export class ProductFinder implements AfterViewInit, OnDestroy {
     this.queryListSub.unsubscribe();
   }
 
-  // onInputSearchKeyDown method handles keydown events on the search input
-  onInputSearchKeyDown(event: KeyboardEvent) {
+  // handleInputSearchKeyDown method handles keydown events on the search input
+  handleInputSearchKeyDown(event: KeyboardEvent) {
     // Only handle keydown events if the key manager is initialized
     if (!this.keyManager) {
       return;
@@ -120,25 +119,15 @@ export class ProductFinder implements AfterViewInit, OnDestroy {
     
     // Handle Enter key to select the active item
     if (event.code === 'Enter' && this.keyManager.activeItem) {
-      this.store.addProduct(this.keyManager.activeItem.item);
+      this.store.addTicketItem(this.keyManager.activeItem.item);
     } else {
       // Delegate other keydown events to the key manager
       this.keyManager.onKeydown(event);
     }
   }
 
-  // onInputSearchTextChange method handles text changes(emitted by input debouncer directive) on the search input
-  onInputSearchTextChange(text: string) {
-    this.store.searchProducts(text);
-  }
-
-  // onItemClick method handles click events on product items
-  onItemClick(product: Product) {
-    this.store.addProduct(product);
-  }
-
-  // onItemMouseMove method handles mousemove events on product items
-  onItemMouseMove(index: number) {
+  // handleItemMouseMove method handles mousemove events on product items
+  handleItemMouseMove(index: number) {
     // Focus the search input if it is not focused
     if (document.activeElement !== this.searchInput.nativeElement) {
       this.searchInput.nativeElement.focus();

@@ -22,7 +22,7 @@ import { CashRegisterStore } from "./store";
             <span>{{ item.quantity }}</span>
             <span>{{ item.price }}</span>
             <span>{{ item.total }}</span>
-            <button (click)="store.removeProduct(item.product)">Remove</button>
+            <button (click)="store.removeTicketItem(item.product)">Remove</button>
           </li>
         }
         </ul>

@@ -24,10 +24,10 @@ import { CashRegisterStore } from "./store";
                 <span>{{ item.price/100 | number:'1.2-2' }}</span>
               </div>
             </nz-tag>
-            <nz-tag class="stock" [nzColor]="item.stock !== null ? (item.stock > 10 ? 'blue' : (item.stock > 0 ? 'gold' : 'red')) : 'default'">
+            <nz-tag class="stock" [nzColor]="getStockColor(item.stock)">
               <div class="tag-content">
                 <span nz-icon nzType="stock"></span>
-                {{item.stock !== null ? item.stock : '∞'}}
+                {{ item.stock !== null ? item.stock : '∞' }}
               </div>
             </nz-tag>
           </div>
@@ -109,6 +109,10 @@ export class ProductItem implements Highlightable {
   // getLabel is implemented from the Highlightable interface
   getLabel() {
     return this.item.name;
+  }
+
+  protected getStockColor(stock: number | null): string {
+    return stock !== null ? (stock > 10 ? 'blue' : (stock > 0 ? 'gold' : 'red')) : 'default';
   }
 
   // scrollIntoView is a helper method to scroll the item into

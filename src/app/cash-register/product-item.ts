@@ -1,4 +1,4 @@
-import { Component, ElementRef, Input, ViewChild, ViewChildren } from "@angular/core";
+import { Component, ElementRef, inject, Input, ViewChild } from "@angular/core";
 import { DecimalPipe } from "@angular/common";
 import { Highlightable } from "@angular/cdk/a11y";
 
@@ -7,7 +7,8 @@ import { NzTagModule } from "ng-zorro-antd/tag";
 import { NzIconModule } from "ng-zorro-antd/icon";
 
 import { HighlightTextPipe } from "../shared/highlight-words-pipe";
-import { Product } from "../api/model";
+import { Product } from "../api/models";
+import { CashRegisterStore } from "./store";
 
 @Component({
   imports: [NzIconModule, NzListModule, NzTagModule, DecimalPipe, HighlightTextPipe],
@@ -15,7 +16,7 @@ import { Product } from "../api/model";
   template: `
     <div #itemRef>
       <nz-list-item [class.disabled]="disabled" [class.active]="isActive">
-        <span [innerHTML]="item.name | highlightText: highligthWords"></span>
+        <span [innerHTML]="item.name | highlightText: store.searchWords()"></span>
           <div class="stats">
             <nz-tag class="price" nzColor="green">
               <div class="tag-content">
@@ -79,10 +80,12 @@ export class ProductItem implements Highlightable {
   // Inputs
   @Input() item!: Product;
   @Input() disabled?: boolean | undefined;
-  @Input() highligthWords!: string[];
 
   // Template references
   @ViewChild('itemRef') itemRef!: ElementRef;
+
+  // Inject the cash register store
+  protected store = inject(CashRegisterStore);
 
   // Component state
   private _isActive: boolean = false;

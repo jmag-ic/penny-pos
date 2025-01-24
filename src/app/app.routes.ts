@@ -1,5 +1,5 @@
 import { Routes } from '@angular/router';
-import { CashRegister } from './cash-register/cash-register';
+import { CashRegister } from './cash-register';
 
 export const routes: Routes = [
   {redirectTo: 'cash-register', path: '', pathMatch: 'full'},

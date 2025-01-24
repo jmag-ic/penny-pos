@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, ElementRef, inject, OnDestroy, output, QueryList, signal, ViewChild, ViewChildren } from "@angular/core";
+import { AfterViewInit, Component, ElementRef, inject, OnDestroy, QueryList, ViewChild, ViewChildren } from "@angular/core";
 import { ActiveDescendantKeyManager } from "@angular/cdk/a11y";
 import { Subscription } from "rxjs";
 
@@ -12,8 +12,8 @@ import { ProductItem } from "./product-item";
 import { InputCleaner } from "../shared/input-cleaner";
 import { InputDebouncer } from "../shared/input-debouncer";
 
-import { ElectronApi } from "../api/electron.api";
-import { Product } from "../api/model";
+import { Product } from "../api/models";
+import { CashRegisterStore } from "./store";
 
 @Component({
   selector: "pos-product-finder",
@@ -36,6 +36,7 @@ import { Product } from "../api/model";
         nz-input
         pos-input-debouncer
         pos-input-cleaner
+        [value]="store.searchText()"
         (keydown)="onInputSearchKeyDown($event)"
         (textChanged)="onInputSearchTextChange($event)"
       />
@@ -48,20 +49,19 @@ import { Product } from "../api/model";
     </ng-template>
     
     <nz-list nzBordered nzSize="small">
-      @if (searching()) {
+      @if (store.searching()) {
         <div style="text-align: center; padding: 1rem;">
           <nz-spin nzSimple></nz-spin>
         </div>
       }
       @else {
-        @for (product of products(); track product.id; let itemIndex = $index) {
+        @for (product of store.products(); track product.id; let itemIndex = $index) {
           <pos-product-item
             [item]="product"
-            [highligthWords]="searchWords()"
             (mousemove)="onItemMouseMove(itemIndex)"
             (click)="onItemClick(product)" />
         }
-        @if (products().length === 0) {
+        @if (store.products().length === 0) {
           <nz-list-empty />
         }
       }
@@ -91,16 +91,8 @@ export class ProductFinder implements AfterViewInit, OnDestroy {
   @ViewChild('searchInput')
   searchInput!: ElementRef;
 
-  // Outputs
-  readonly productSelected = output<Product>();
-
-  // Injected services
-  private api = inject(ElectronApi);
-
-  // Component state
-  readonly searchWords = signal<string[]>([]);
-  readonly products = signal<Product[]>([]);
-  readonly searching = signal<boolean>(false);
+  // Inject the cash register store
+  protected readonly store = inject(CashRegisterStore);
 
   // Key manager
   private keyManager!: ActiveDescendantKeyManager<ProductItem>; 
@@ -128,7 +120,7 @@ export class ProductFinder implements AfterViewInit, OnDestroy {
     
     // Handle Enter key to select the active item
     if (event.code === 'Enter' && this.keyManager.activeItem) {
-      this.selectProduct(this.keyManager.activeItem.item);
+      this.store.addProduct(this.keyManager.activeItem.item);
     } else {
       // Delegate other keydown events to the key manager
       this.keyManager.onKeydown(event);
@@ -137,36 +129,12 @@ export class ProductFinder implements AfterViewInit, OnDestroy {
 
   // onInputSearchTextChange method handles text changes(emitted by input debouncer directive) on the search input
   onInputSearchTextChange(text: string) {
-    // If no text is provided, clear the products list
-    if (!text) {
-      if (this.products().length > 0) {
-        this.products.set([]);
-      }
-      return;
-    }
-
-    // Update searching and search words state
-    this.searching.set(true);
-    this.searchWords.set(text.split(' ').map(word => word.trim()));
-
-    // Fetch products from the database
-    this.api.getProducts(text).subscribe({
-      next: (products: Product[]) => {
-        this.products.set(products);
-      },
-      complete: () => {
-        this.searching.set(false);
-      },
-      error: (error: Error) => {
-        console.error(error);
-        this.searching.set(false);
-      }
-    });
+    this.store.searchProducts(text);
   }
 
   // onItemClick method handles click events on product items
-  onItemClick(item: Product) {
-    this.selectProduct(item);
+  onItemClick(product: Product) {
+    this.store.addProduct(product);
   }
 
   // onItemMouseMove method handles mousemove events on product items
@@ -180,12 +148,5 @@ export class ProductFinder implements AfterViewInit, OnDestroy {
     if (this.keyManager && this.keyManager.activeItemIndex !== index) {
       this.keyManager.setActiveItem(index);
     }
-  }
-
-  // selectProduct method emits the selectProduct event and resets the component state
-  private selectProduct(item: Product) {
-    this.productSelected.emit(item);
-    this.products.set([]);
-    this.searchInput.nativeElement.value = '';
   }
 }

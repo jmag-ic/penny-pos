@@ -4,25 +4,25 @@ import { patchState, signalStore, withComputed, withMethods, withState } from '@
 import { Api } from '../api';
 import { Product } from "../api/models"
 
-type TicketItem = {
+export type LineItem = {
   product: Product
   quantity: number
   price: number
   total: number
 }
 
-type CashRegisterState = {
+type Sale = {
   searching: boolean
   searchText: string
   products: Product[]
-  ticket: TicketItem[]
+  ticket: LineItem[]
 }
 
-const initialState: CashRegisterState = {
+const initialState: Sale = {
   searching: false,
   searchText: '',
   products: [] as Product[],
-  ticket: [] as TicketItem[]
+  ticket: [] as LineItem[]
 }
 
 export const CashRegisterStore = signalStore(
@@ -32,7 +32,7 @@ export const CashRegisterStore = signalStore(
 
   withComputed((state) => ({
     // Total amount of the ticket
-    total: computed(() => state.ticket().reduce((total, item) => total + item.total, 0)),
+    total: computed(() => state.ticket().reduce((total, lineItem) => total + lineItem.total, 0)),
 
     // Search words from the search text
     searchWords: computed(() => state.searchText()
@@ -44,23 +44,23 @@ export const CashRegisterStore = signalStore(
 
   withMethods((store, api = inject(Api)) => {
     // Helper methods
-    // Find a ticket item by product id
-    const findTicketItem = (id: number) => store.ticket().find((item) => item.product.id === id)
+    // Find a line item by product id
+    const findLineItem = (id: number) => store.ticket().find((lineItem) => lineItem.product.id === id)
     
-    // Update an existing item in the ticket
-    const updateTicketItem = (ticket: TicketItem[], product: Product, quantity: number) => 
-      ticket.map((item) =>
-        item.product.id === product.id
+    // Update an existing line item and return the updated ticket
+    const updateLineItem = (ticket: LineItem[], product: Product, quantity: number) => 
+      ticket.map((lineItem) =>
+        lineItem.product.id === product.id
           ? {
-              ...item,
+              ...lineItem,
               quantity: quantity,
-              total: quantity * item.price,
+              total: quantity * lineItem.price,
             }
-          : item
+          : lineItem
       );
 
-    // Add a new item to the ticket
-    const addTicketItem = (ticket: TicketItem[], product: Product) => [
+    // Add a new line item to the ticket and return the updated ticket
+    const addLineItem = (ticket: LineItem[], product: Product) => [
       ...ticket,
       {
         product,
@@ -72,14 +72,14 @@ export const CashRegisterStore = signalStore(
 
     // Store methods
     return {
-      addTicketItem(product: Product) {
+      addLineItem(product: Product) {
         // Check if the product is already in the ticket
-        const existingItem = findTicketItem(product.id);
+        const lineItem = findLineItem(product.id);
 
-        // Get the updated ticket with a new item or an updated item quantity
-        const updatedTicket = existingItem
-          ? updateTicketItem(store.ticket(), product, existingItem.quantity + 1)
-          : addTicketItem(store.ticket(), product);
+        // Get the updated ticket with a new line item or an updated line item quantity
+        const updatedTicket = lineItem
+          ? updateLineItem(store.ticket(), product, lineItem.quantity + 1)
+          : addLineItem(store.ticket(), product);
 
         // Update the ticket 
         patchState(store, { ticket: updatedTicket });
@@ -89,9 +89,18 @@ export const CashRegisterStore = signalStore(
         patchState(store, { ticket: [] });
       },
 
-      removeTicketItem(product: Product) {
+      removeLineItem(product: Product) {
         patchState(store, (state) => ({
-          ticket: state.ticket.filter((item) => item.product.id !== product.id)
+          ticket: state.ticket.filter((lineItem) => lineItem.product.id !== product.id)
+        }));
+      },
+
+      removeLastLineItem() {
+        if (store.ticket().length == 0) {
+          return;
+        }
+        patchState(store, (state) => ({
+          ticket: state.ticket.slice(0, -1)
         }));
       },
 
@@ -116,9 +125,9 @@ export const CashRegisterStore = signalStore(
         }
       },
 
-      updateTicketItem(product: Product, quantity: number) {
+      updateLineItem(product: Product, quantity: number) {
         // Get the updated ticket with the new quantity
-        const updatedTicket = updateTicketItem(store.ticket(), product, quantity);
+        const updatedTicket = updateLineItem(store.ticket(), product, quantity);
 
         // Update the ticket
         patchState(store, { ticket: updatedTicket });

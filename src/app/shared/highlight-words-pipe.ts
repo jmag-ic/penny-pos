@@ -4,7 +4,7 @@ import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 @Pipe({
   name: 'highlightText'
 })
-export class HighlightTextPipe implements PipeTransform {
+export class HighlightWordsPipe implements PipeTransform {
   // Inject DomSanitizer to bypass security
   private sanitizer = inject(DomSanitizer);
 

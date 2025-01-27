@@ -6,31 +6,31 @@ import { NzListModule } from "ng-zorro-antd/list";
 import { NzTagModule } from "ng-zorro-antd/tag";
 import { NzIconModule } from "ng-zorro-antd/icon";
 
-import { HighlightTextPipe } from "../shared/highlight-words-pipe";
+import { HighlightWordsPipe } from "../shared/highlight-words-pipe";
 import { Product } from "../api/models";
 import { CashRegisterStore } from "./store";
 
 @Component({
-  imports: [NzIconModule, NzListModule, NzTagModule, DecimalPipe, HighlightTextPipe],
+  imports: [NzIconModule, NzListModule, NzTagModule, DecimalPipe, HighlightWordsPipe],
   selector: 'pos-product-item',
   template: `
-    <div #itemRef>
-      <nz-list-item [class.disabled]="disabled" [class.active]="isActive">
-        <span [innerHTML]="item.name | highlightText: store.searchWords()"></span>
-          <div class="stats">
-            <nz-tag class="price" nzColor="green">
-              <div class="tag-content">
-                <span nz-icon nzType="dollar"></span>
-                <span>{{ item.price/100 | number:'1.2-2' }}</span>
-              </div>
-            </nz-tag>
-            <nz-tag class="stock" [nzColor]="getStockColor(item.stock)">
-              <div class="tag-content">
-                <span nz-icon nzType="stock"></span>
-                {{ item.stock !== null ? item.stock : '∞' }}
-              </div>
-            </nz-tag>
+    <div #containerRef>
+    <nz-list-item [class.disabled]="disabled" [class.active]="isActive">
+      <span [innerHTML]="product.name | highlightText: store.searchWords()"></span>
+      <div class="stats">
+        <nz-tag class="price" nzColor="green">
+          <div class="tag-content">
+            <span nz-icon nzType="dollar"></span>
+            <span>{{ product.price/100 | number:'1.2-2' }}</span>
           </div>
+        </nz-tag>
+        <nz-tag class="stock" [nzColor]="getStockColor(product.stock)">
+          <div class="tag-content">
+            <span nz-icon nzType="stock"></span>
+            <span>{{ product.stock !== null ? product.stock : '∞' }}</span>
+          </div>
+        </nz-tag>
+      </div>
       </nz-list-item>
     </div>
   `,
@@ -78,11 +78,11 @@ import { CashRegisterStore } from "./store";
 })
 export class ProductItem implements Highlightable {
   // Inputs
-  @Input() item!: Product;
+  @Input() product!: Product;
   @Input() disabled?: boolean | undefined;
 
   // Template references
-  @ViewChild('itemRef') itemRef!: ElementRef;
+  @ViewChild('containerRef') containerRef!: ElementRef;
 
   // Inject the cash register store
   protected store = inject(CashRegisterStore);
@@ -96,7 +96,7 @@ export class ProductItem implements Highlightable {
   }
 
   // setActiveStyles and setInactiveStyles are implemented from the Highlightable interface
-  // They are used to set the active and inactive styles of the item
+  // They are used to set the active and inactive styles of the product item
   setActiveStyles() {
     this._isActive = true;
     this.scrollIntoView();
@@ -108,15 +108,15 @@ export class ProductItem implements Highlightable {
 
   // getLabel is implemented from the Highlightable interface
   getLabel() {
-    return this.item.name;
+    return this.product.name;
   }
 
   protected getStockColor(stock: number | null): string {
     return stock !== null ? (stock > 10 ? 'blue' : (stock > 0 ? 'gold' : 'red')) : 'default';
   }
 
-  // scrollIntoView is a helper method to scroll the item into
+  // scrollIntoView is a helper method to scroll the product item into
   private scrollIntoView(): void {
-    this.itemRef.nativeElement.scrollIntoView({ block: 'nearest' });
+    this.containerRef.nativeElement.scrollIntoView({ block: 'nearest' });
   }
 }

@@ -7,7 +7,7 @@ import { NzIconModule } from "ng-zorro-antd/icon";
 import { NzInputNumberModule } from 'ng-zorro-antd/input-number';
 import { NzListModule } from "ng-zorro-antd/list";
 
-import { CashRegisterStore } from "./store";
+import { SalesStore } from "./store";
 
 @Component({
   selector: "pos-ticket",
@@ -17,26 +17,26 @@ import { CashRegisterStore } from "./store";
       <table style="width:100%; border-collapse:collapse;">
         <thead>
           <tr>
-            <th colspan=5 style="text-align:center;">Ticket de venta</th>
+            <th colspan=5 style="text-align:center;">Ticket de venta {{ store.currentSale().id }}</th>
           </tr>
         </thead>
         <tbody>
-          @if (store.ticket().length === 0) {
-            <div style="text-align:center; padding:1rem;">
-              <nz-list-empty />
-            </div>
+          @if(store.currentSale().ticket.length === 0){
+            <nz-list-empty />
           }
-          @for(lineItem of store.ticket(); track lineItem.product.id) {
+          @for(lineItem of store.currentSale().ticket; track lineItem.product.id) {
             <tr>
-              <td style="width: 100%;">{{ lineItem.product.name }}</td>
-              <td class="values">\${{ lineItem.price/100 | number:'1.2-2' }}</td>
-              <td class="values" style="display:flex;align-items:center;">
-                <span style="margin-right: 0.2rem;">x</span><nz-input-number [ngModel]="lineItem.quantity" (ngModelChange)="store.updateLineItem(lineItem.product, $event)" />
-              </td>
-              <td class="values">\${{ lineItem.total/100 | number:'1.2-2' }}</td>
               <td class="values">
                 <nz-icon style="cursor:pointer;" nzType="delete" nzTheme="outline" (click)="store.removeLineItem(lineItem.product)"/>
               </td>
+              <td style="width: 100%;">{{ lineItem.product.name }}</td>
+              <td class="values">\${{ lineItem.price/100 | number:'1.2-2' }}</td>
+              <td class="values">
+                <div style="display:flex;align-items:center;">
+                  <span style="margin-right: 0.2rem;">x</span><nz-input-number [ngModel]="lineItem.quantity" (ngModelChange)="store.updateLineItem(lineItem.product, $event)" />
+                </div>
+              </td>
+              <td class="values">\${{ lineItem.total/100 | number:'1.2-2' }}</td>
             </tr>
           }
         </tbody>
@@ -56,10 +56,10 @@ import { CashRegisterStore } from "./store";
   `,
   styles: [`
     :host {
-      height: 100vh;
+      height: calc(100vh - 4rem);
       display: flex;
       flex-direction: column;
-      padding: 1rem;
+      padding: 0 1rem 1rem;
     }
 
     th {
@@ -82,5 +82,5 @@ import { CashRegisterStore } from "./store";
   `]
 })
 export class Ticket {
-  protected readonly store = inject(CashRegisterStore);
+  protected readonly store = inject(SalesStore);
 }

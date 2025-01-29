@@ -1,137 +1,266 @@
 import { computed, inject } from '@angular/core';
 import { patchState, signalStore, withComputed, withMethods, withState } from '@ngrx/signals';
-
 import { Api } from '../api';
-import { Product } from "../api/models"
+import { Product } from '../api/models';
 
 export type LineItem = {
-  product: Product
-  quantity: number
-  price: number
-  total: number
-}
+  product: Product;
+  quantity: number;
+  price: number;
+  total: number;
+};
 
-type Sale = {
-  searching: boolean
-  searchText: string
-  products: Product[]
-  ticket: LineItem[]
-}
+export type Sale = {
+  id: number;
+  searching: boolean;
+  searchText: string;
+  products: Product[];
+  ticket: LineItem[];
+};
 
-const initialState: Sale = {
+const emptySale: Sale = {
+  id: 1,
   searching: false,
   searchText: '',
-  products: [] as Product[],
-  ticket: [] as LineItem[]
-}
+  products: [],
+  ticket: []
+};
 
-export const CashRegisterStore = signalStore(
+type Sales = {
+  sales: Sale[];
+  currentIdx: number;
+  currentSaleNumber: number;
+};
+
+const initialState: Sales = {
+  sales: [emptySale],  // Start with one empty sale
+  currentIdx: 0,
+  currentSaleNumber: 1
+};
+
+export const SalesStore = signalStore(
   { providedIn: 'root' },
-  
+
   withState(initialState),
 
-  withComputed((state) => ({
-    // Total amount of the ticket
-    total: computed(() => state.ticket().reduce((total, lineItem) => total + lineItem.total, 0)),
+  withComputed((store) => ({
+    // The currently selected sale
+    currentSale: computed(() => {
+      const idx = store.currentIdx();
+      return store.sales()[idx];
+    }),
 
-    // Search words from the search text
-    searchWords: computed(() => state.searchText()
-      .split(' ')
-      .map((word) => word.trim())
-      .filter((word) => word.length > 0)
-    )
+    // Convenience: total amount of the currently selected sale
+    total: computed(() => {
+      const sale = store.sales()[store.currentIdx()];
+      return sale.ticket.reduce((sum, lineItem) => sum + lineItem.total, 0);
+    }),
+
+    // Convenience: search words derived from the selected sale's searchText
+    searchWords: computed(() => {
+      const sale = store.sales()[store.currentIdx()];
+      return sale.searchText
+        .split(' ')
+        .map((word) => word.trim())
+        .filter((word) => word.length > 0);
+    }),
+
+    // The last valid index of the sales array
+    lastIdx: computed(() => store.sales().length - 1)
   })),
 
+  // Methods that mutate the store state
   withMethods((store, api = inject(Api)) => {
-    // Helper methods
-    // Find a line item by product id
-    const findLineItem = (id: number) => store.ticket().find((lineItem) => lineItem.product.id === id)
-    
-    // Update an existing line item and return the updated ticket
-    const updateLineItem = (ticket: LineItem[], product: Product, quantity: number) => 
-      ticket.map((lineItem) =>
+    /**
+     * Helper: Update the currently selected sale.
+     * We get the old sale, transform it, and produce a new sale object,
+     * then patch `store.sales` accordingly.
+     */
+    function updateCurrentSale(updater: (oldSale: Sale) => Sale) {
+      patchState(store, (state) => {
+        const { sales, currentIdx: selectedIdx } = state;
+        const updatedSales = sales.map((sale, idx) =>
+          idx === selectedIdx ? updater(sale) : sale
+        );
+        return { sales: updatedSales };
+      });
+    }
+
+    // Utility: find a line item by product ID
+    function findLineItem(sale: Sale, productId: number) {
+      return sale.ticket.find((item) => item.product.id === productId);
+    }
+
+    // Utility: update an existing line item's quantity
+    function updateLineItem(sale: Sale, product: Product, quantity: number) {
+      return sale.ticket.map((lineItem) =>
         lineItem.product.id === product.id
           ? {
               ...lineItem,
-              quantity: quantity,
+              quantity,
               total: quantity * lineItem.price,
             }
           : lineItem
       );
+    }
 
-    // Add a new line item to the ticket and return the updated ticket
-    const addLineItem = (ticket: LineItem[], product: Product) => [
-      ...ticket,
-      {
-        product,
-        quantity: 1,
-        price: product.price,
-        total: product.price,
-      },
-    ];
+    // Utility: add a new line item and return the updated ticket
+    function addNewLineItem(sale: Sale, product: Product) {
+      return [
+        ...sale.ticket,
+        {
+          product,
+          quantity: 1,
+          price: product.price,
+          total: product.price
+        }
+      ];
+    }
 
-    // Store methods
     return {
-      addLineItem(product: Product) {
-        // Check if the product is already in the ticket
-        const lineItem = findLineItem(product.id);
+      // Methods that manage the sales array
+      addSale() {
+        // Limit the number of open sales to, e.g., 8
+        if (store.lastIdx() >= 8) {
+          return;
+        }
 
-        // Get the updated ticket with a new line item or an updated line item quantity
-        const updatedTicket = lineItem
-          ? updateLineItem(store.ticket(), product, lineItem.quantity + 1)
-          : addLineItem(store.ticket(), product);
+        const nextSaleNumber = store.currentSaleNumber() + 1;
+        const newSale: Sale = {
+          ...emptySale,
+          id: nextSaleNumber
+        };
 
-        // Update the ticket 
-        patchState(store, { ticket: updatedTicket });
+        patchState(store, (state) => ({
+          sales: [...state.sales, newSale],
+          currentSaleNumber: nextSaleNumber
+        }));
+
+        // Select the newly added sale
+        this.setCurrentSale(store.lastIdx());
       },
 
-      clearTicket() {
-        patchState(store, { ticket: [] });
+      removeSale(index: number) {
+        // If there's only one sale left, reset it
+        if (store.sales().length <= 1) {
+          patchState(store, {
+            sales: [emptySale],
+            currentIdx: 0,
+            currentSaleNumber: 1
+          });
+          return;
+        }
+
+        // Adjust the selected index if needed
+        let newSelectedIdx = store.currentIdx();
+        if (index === newSelectedIdx && index > 0) {
+          newSelectedIdx--;
+        }
+
+        patchState(store, (state) => ({
+          sales: state.sales.filter((_, i) => i !== index),
+          currentIdx: newSelectedIdx
+        }));
+      },
+
+      setCurrentSale(index: number) {
+        if (index < 0 || index > store.lastIdx()) {
+          return;
+        }
+        patchState(store, { currentIdx: index });
+      },
+
+      // Methods that manage the current sale
+      addLineItem(product: Product) {
+        updateCurrentSale((sale) => {
+          const lineItem = findLineItem(sale, product.id);
+          return lineItem
+            ? {
+                ...sale,
+                searchText: '',
+                products: [],
+                ticket: updateLineItem(sale, product, lineItem.quantity + 1)
+              }
+            : {
+                ...sale,
+                searchText: '',
+                products: [],
+                ticket: addNewLineItem(sale, product)
+              };
+        });
       },
 
       removeLineItem(product: Product) {
-        patchState(store, (state) => ({
-          ticket: state.ticket.filter((lineItem) => lineItem.product.id !== product.id)
+        updateCurrentSale((sale) => ({
+          ...sale,
+          ticket: sale.ticket.filter((item) => item.product.id !== product.id)
         }));
       },
 
       removeLastLineItem() {
-        if (store.ticket().length == 0) {
-          return;
-        }
-        patchState(store, (state) => ({
-          ticket: state.ticket.slice(0, -1)
+        updateCurrentSale((sale) => {
+          if (sale.ticket.length === 0) return sale;
+          return {
+            ...sale,
+            ticket: sale.ticket.slice(0, -1)
+          };
+        });
+      },
+
+      clearTicket() {
+        updateCurrentSale((sale) => ({
+          ...sale,
+          ticket: []
         }));
       },
 
-      async searchProducts(searchText: string) {
-        // Update the search text and set the searching flag
-        patchState(store, { searchText, searching: !!searchText });
+      resetSale() {
+        // Replace the currently selected sale with a fresh emptySale
+        updateCurrentSale(() => ({...emptySale}));
+      },
 
-        // If the search text is empty, clear the products and return
+      async searchProducts(searchText: string) {
+        // If the user cleared the search text, just reset products & searching
         if (!searchText) {
-          patchState(store, { products: [], searching: false });
+          updateCurrentSale((sale) => ({
+            ...sale,
+            products: [],
+            searching: false
+          }));
           return;
         }
 
-        // Fetch products from the API
+        // Update the selected sale to store the new search text & searching flag
+        updateCurrentSale((sale) => ({
+          ...sale,
+          searchText,
+          searching: true
+        }));
+
+        // Otherwise, fetch products from API
         try {
           const products = await api.getProducts(searchText);
-          patchState(store, { products, searching: false });
-          
+          updateCurrentSale((sale) => ({
+            ...sale,
+            products,
+            searching: false
+          }));
         } catch (error) {
           console.error('Error fetching products:', error);
-          patchState(store, { searching: false });
+          // Turn off the searching flag
+          updateCurrentSale((sale) => ({
+            ...sale,
+            searching: false
+          }));
         }
       },
 
       updateLineItem(product: Product, quantity: number) {
-        // Get the updated ticket with the new quantity
-        const updatedTicket = updateLineItem(store.ticket(), product, quantity);
-
-        // Update the ticket
-        patchState(store, { ticket: updatedTicket });
+        updateCurrentSale((sale) => ({
+          ...sale,
+          ticket: updateLineItem(sale, product, quantity)
+        }));
       }
-    }
+    };
   })
 );

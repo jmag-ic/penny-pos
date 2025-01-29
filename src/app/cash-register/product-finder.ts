@@ -12,7 +12,7 @@ import { ProductItem } from "./product-item";
 import { InputCleaner } from "../shared/input-cleaner";
 import { InputDebouncer } from "../shared/input-debouncer";
 
-import { CashRegisterStore } from "./store";
+import { SalesStore } from "./store";
 import { Product } from "../api/models";
 
 @Component({
@@ -36,7 +36,7 @@ import { Product } from "../api/models";
         nz-input
         pos-input-debouncer
         pos-input-cleaner
-        [value]="store.searchText()"
+        [value]="store.currentSale().searchText"
         (keydown)="handleKeyDownOnSearchInput($event)"
         (textChanged)="store.searchProducts($event)"
       />
@@ -49,13 +49,13 @@ import { Product } from "../api/models";
     </ng-template>
     
     <nz-list nzBordered nzSize="small">
-      @if (store.searching()) {
+      @if (store.currentSale().searching) {
         <div style="text-align: center; padding: 1rem;">
           <nz-spin nzSimple></nz-spin>
         </div>
       }
       @else {
-        @for (product of store.products(); track product.id; let idx = $index) {
+        @for (product of store.currentSale().products; track product.id; let idx = $index) {
           <pos-product-item
             [product]="product"
             (mousemove)="handleMouseMoveOnProductItem(idx)"
@@ -67,7 +67,7 @@ import { Product } from "../api/models";
   styles: [`
     :host {
       display: block;
-      padding: 1rem;
+      padding: 0 1rem 1rem;
     }
 
     nz-input-group {
@@ -76,7 +76,7 @@ import { Product } from "../api/models";
 
     nz-list {
       overflow-y: scroll;
-      height: calc(100vh - 5rem);
+      height: calc(100vh - 8rem);
     }
   `]
 })
@@ -89,7 +89,7 @@ export class ProductFinder implements AfterViewInit, OnDestroy {
   searchInput!: ElementRef;
 
   // Inject the cash register store
-  protected readonly store = inject(CashRegisterStore);
+  protected readonly store = inject(SalesStore);
 
   // Key manager
   private keyManager!: ActiveDescendantKeyManager<ProductItem>; 

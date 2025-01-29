@@ -8,7 +8,7 @@ import { NzIconModule } from "ng-zorro-antd/icon";
 
 import { HighlightWordsPipe } from "../shared/highlight-words-pipe";
 import { Product } from "../api/models";
-import { CashRegisterStore } from "./store";
+import { SalesStore } from "./store";
 
 @Component({
   imports: [NzIconModule, NzListModule, NzTagModule, DecimalPipe, HighlightWordsPipe],
@@ -20,13 +20,13 @@ import { CashRegisterStore } from "./store";
       <div class="stats">
         <nz-tag class="price" nzColor="green">
           <div class="tag-content">
-            <span nz-icon nzType="dollar"></span>
+            <span nz-icon nzType="dollar" style="margin-right:2px;"></span>
             <span>{{ product.price/100 | number:'1.2-2' }}</span>
           </div>
         </nz-tag>
         <nz-tag class="stock" [nzColor]="getStockColor(product.stock)">
           <div class="tag-content">
-            <span nz-icon nzType="stock"></span>
+            <span nz-icon nzType="stock" style="margin-right:2px;"></span>
             <span>{{ product.stock !== null ? product.stock : '∞' }}</span>
           </div>
         </nz-tag>
@@ -54,13 +54,13 @@ import { CashRegisterStore } from "./store";
       flex-direction: column;
     }
   
-    nz-tag.price {
-      min-width: 5rem;
-    }
+    // nz-tag.price {
+    //   min-width: 5rem;
+    // }
   
-    nz-tag.stock {
-      min-width: 3.5rem;
-    }
+    // nz-tag.stock {
+    //   min-width: 3.5rem;
+    // }
   
     [nzType="dollar-o"] {
       color: #52c41a;
@@ -85,7 +85,7 @@ export class ProductItem implements Highlightable {
   @ViewChild('containerRef') containerRef!: ElementRef;
 
   // Inject the cash register store
-  protected store = inject(CashRegisterStore);
+  protected store = inject(SalesStore);
 
   // Component state
   private _isActive: boolean = false;

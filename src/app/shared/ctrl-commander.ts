@@ -1,35 +1,42 @@
-// CtrlCommander is an abstract class that will be used to handle keyboard ctrl commands
+
 export abstract class CtrlCommander {
+  constructor(
+    private keyMap: Record<string, (event: KeyboardEvent) => void>, 
+    private defaultHandler?: (event: KeyboardEvent) => void
+  ) { }
 
-  // Define a keyMap object to map a key to a function
-  private keyMap: { [key: string]: () => void };
+  /**
+   * Handles keydown events and executes the associated function from the keyMap.
+   * @param event - The keyboard event to handle.
+   */
+  protected handleCtrlCommands(event: KeyboardEvent): void {
+    // Ignore events where the `Ctrl` key is not pressed
+    if (!event.ctrlKey) return;
 
-  // Define a constructor that receives a keyMap object
-  constructor(keyMap: { [key: string]: () => void }) {
-    this.keyMap = keyMap;
-  }
+    // Normalize the key (e.g., map digits, handle case sensitivity)
+    const key = this.normalizeKey(event.key);
 
-  // handleCtrlCommands is a method that receives a KeyboardEvent and executes it's respective function
-  protected handleCtrlCommands(event: KeyboardEvent) {
-    // Check if the ctrl key is pressed
-    if (!event.ctrlKey) {
-      return;
-    }
+    // Attempt to find a matching command in the keyMap
+    const handler = this.keyMap[key];
     
-    // Check if the key is in the keyMap object 
-    const fn = this.keyMap[event.key];
-    if (!fn) {
-      return;
+    if (handler) {
+      // Prevent default behavior
+      event.preventDefault();
+      handler(event);
+    
+    } else if (this.defaultHandler) {
+      // Optional: call default handler for unmapped keys
+      this.defaultHandler(event);
     }
-
-    // stop the event from propagating
-    event.preventDefault();
-
-    // Execute the function
-    fn();
   }
 
-  // handleKeyDownEvent is an abstract method that needs to be implemented and decorated with the HostListener decorator.
-  // The implementation should call the handleCtrlCommands method
-  protected abstract handleKeyDownEvent(event: KeyboardEvent): void;
+  /**
+   * Normalizes keys to handle edge cases like digits or case sensitivity.
+   * @param key - The raw key from the keyboard event.
+   * @returns A normalized key suitable for matching in the keyMap.
+   */
+  private normalizeKey(key: string): string {
+    if (/^\d$/.test(key)) return 'digit'; // Map numeric keys to "digit"
+    return key.toLowerCase(); // Ensure case-insensitivity
+  }
 }

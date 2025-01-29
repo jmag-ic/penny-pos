@@ -54,14 +54,6 @@ import { SalesStore } from "./store";
       flex-direction: column;
     }
   
-    // nz-tag.price {
-    //   min-width: 5rem;
-    // }
-  
-    // nz-tag.stock {
-    //   min-width: 3.5rem;
-    // }
-  
     [nzType="dollar-o"] {
       color: #52c41a;
     }

@@ -11,8 +11,11 @@ let mainWindow: BrowserWindow;
 // createWindow method creates the main window
 function createWindow() {
   mainWindow = new BrowserWindow({
-    width: 800,
+    width: 1024,
     height: 600,
+    center: true,
+    'minHeight': 600,
+    'minWidth': 800,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js')
     }

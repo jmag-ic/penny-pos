@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, ElementRef, inject, OnDestroy, QueryList, ViewChild, ViewChildren } from "@angular/core";
+import { AfterViewInit, Component, ElementRef, HostBinding, inject, Input, input, OnDestroy, QueryList, ViewChild, ViewChildren } from "@angular/core";
 import { ActiveDescendantKeyManager } from "@angular/cdk/a11y";
 import { Subscription } from "rxjs";
 
@@ -28,7 +28,7 @@ import { Product } from "../api/models";
     InputDebouncer
   ],
   template: `
-    <nz-input-group nzSearch [nzAddOnAfter]="suffixIconButton">
+    <nz-input-group [className]="'mb-3'" nzSearch [nzAddOnAfter]="suffixIconButton">
       <input
         #searchInput
         type="text"
@@ -66,21 +66,19 @@ import { Product } from "../api/models";
   `,
   styles: [`
     :host {
-      display: block;
-      padding: 0 1rem 1rem;
-    }
-
-    nz-input-group {
-      margin-bottom: 1rem;
+      display: flex !important;
+      flex-direction: column !important;
+      height: calc(100vh - 8rem);
     }
 
     nz-list {
-      overflow-y: scroll;
-      height: calc(100vh - 8rem);
+      flex: 1;
+      overflow-y: auto;
     }
-  `]
+  `],
 })
 export class ProductFinder implements AfterViewInit, OnDestroy {
+
   // Template references
   @ViewChildren(ProductItem)
   queryListItems!: QueryList<ProductItem>;

@@ -1,4 +1,4 @@
-import { Component, inject } from "@angular/core";
+import { Component, HostBinding, inject, Input } from "@angular/core";
 import { DecimalPipe } from "@angular/common";
 import { FormsModule } from '@angular/forms';
 
@@ -13,11 +13,11 @@ import { SalesStore } from "./store";
   selector: "pos-ticket",
   imports: [FormsModule, DecimalPipe, NzButtonModule, NzIconModule, NzInputNumberModule, NzListModule],
   template: `
-    <div style="flex:1; overflow-y:auto; border:1px solid #ddd;">
-      <table style="width:100%; border-collapse:collapse;">
+    <div class="table-container">
+      <table class="full-w">
         <thead>
           <tr>
-            <th colspan=5 style="text-align:center;">Ticket de venta {{ store.currentSale().id }}</th>
+            <th colspan=5 class="text-center">Ticket de venta {{ store.currentSale().id }}</th>
           </tr>
         </thead>
         <tbody>
@@ -26,17 +26,17 @@ import { SalesStore } from "./store";
           }
           @for(lineItem of store.currentSale().ticket; track lineItem.product.id) {
             <tr>
-              <td class="values">
-                <nz-icon style="cursor:pointer;" nzType="delete" nzTheme="outline" (click)="store.removeLineItem(lineItem.product)"/>
+              <td>
+                <nz-icon class="delete-icon" nzType="delete" nzTheme="outline" (click)="store.removeLineItem(lineItem.product)"/>
               </td>
-              <td style="width: 100%;">{{ lineItem.product.name }}</td>
-              <td class="values">\${{ lineItem.price/100 | number:'1.2-2' }}</td>
-              <td class="values">
-                <div style="display:flex;align-items:center;">
-                  <span style="margin-right: 0.2rem;">x</span><nz-input-number [ngModel]="lineItem.quantity" (ngModelChange)="store.updateLineItem(lineItem.product, $event)" />
-                </div>
+              <td class="full-w">{{ lineItem.product.name }}</td>
+              <td>\${{ lineItem.price/100 | number:'1.2-2' }}</td>
+              <td class="quantity">
+                <!-- <div class="quantity"> -->
+                  <span class="mr-1">x</span><nz-input-number [ngModel]="lineItem.quantity" (ngModelChange)="store.updateLineItem(lineItem.product, $event)" />
+                <!-- </div> -->
               </td>
-              <td class="values">\${{ lineItem.total/100 | number:'1.2-2' }}</td>
+              <td class="border-l">\${{ lineItem.total/100 | number:'1.2-2' }}</td>
             </tr>
           }
         </tbody>
@@ -44,25 +44,36 @@ import { SalesStore } from "./store";
     </div>
     
     <!-- Total -->
-    <div style="display:flex; justify-content:space-between; font-size:1.2rem; font-weight:bold; padding:1rem;">
+    <div class="total p-3">
       <span>Total</span><span>\${{ store.total()/100 | number:'1.2-2' }}</span>
     </div>
 
     <!-- Checkout -->
-    <div style="display:flex; justify-content: end; padding-top: 1rem;">
+    <div class="checkout pt-3">
       <button nz-button nzType="default" nzSize="large" nzShape="round">Cancelar</button>
-      <button nz-button nzType="primary" nzSize="large" nzShape="round" style="margin-left: 1rem;">Pagar</button>
+      <button nz-button nzType="primary" nzSize="large" nzShape="round" class="ml-3">Pagar</button>
     </div>
   `,
   styles: [`
     :host {
-      height: calc(100vh - 4rem);
       display: flex;
       flex-direction: column;
-      padding: 0 1rem 1rem;
+      height: calc(100vh - 8rem);
     }
 
-    th {
+    .table-container {
+      border: 1px solid #ddd;
+      overflow-y: auto;
+      flex: 1;
+    }
+
+    table {
+      border-collapse:collapse;
+    }
+
+    thead th {
+      position: sticky;
+      top: 0;
       background-color: #fafafa;
     }
 
@@ -71,16 +82,39 @@ import { SalesStore } from "./store";
       border-bottom: 1px solid #ddd;
     }
 
-    td.values {
-      text-align: right;
-      border-left: 1px solid #ddd;
+    td.quantity {
+      display: flex;
+      align-items: center;
+    }
+
+    .delete-icon {
+      cursor: pointer;
+    }
+
+    .delete-icon:hover {
+      color: red;
     }
 
     .ant-input-number {
       width: 60px;
     }
-  `]
+
+    .total {
+      display: flex;
+      font-size: 1.2rem;
+      font-weight: bold;
+      justify-content: space-between;
+    }
+
+    .checkout {
+      display: flex;
+      justify-content: end; 
+    }
+  `],
 })
 export class Ticket {
+  @Input()
+  @HostBinding('class') className: string = '';
+
   protected readonly store = inject(SalesStore);
 }

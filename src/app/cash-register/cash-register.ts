@@ -1,4 +1,4 @@
-import { Component, HostListener, inject, ViewChild } from "@angular/core";
+import { AfterViewInit, Component, HostListener, inject, ViewChild } from "@angular/core";
 
 import { NzGridModule } from "ng-zorro-antd/grid";
 import { NzTableModule } from 'ng-zorro-antd/table';
@@ -26,8 +26,8 @@ import { SalesStore } from "./store";
       }
     </nz-tabset>
     <div nz-row>
-      <div nz-col nzSpan="9">
-        <pos-product-finder/>
+      <div nz-col nzSpan="9" class="pr-3">
+        <pos-product-finder />
       </div>
       <div nz-col nzSpan="15">
         <pos-ticket/>
@@ -35,7 +35,7 @@ import { SalesStore } from "./store";
     </div>
   `
 })
-export class CashRegister extends CtrlCommander {
+export class CashRegister extends CtrlCommander implements AfterViewInit {
 
   @ViewChild(ProductFinder)
   protected productFinder!: ProductFinder;
@@ -58,6 +58,10 @@ export class CashRegister extends CtrlCommander {
       'w': () => this.removeSale(this.store.currentIdx()),
       'digit': ({key}) => this.selectSale(+key-1)
     });
+  }
+
+  ngAfterViewInit(): void {
+    this.productFinder.focusSearchInput();
   }
 
   protected addSale() {

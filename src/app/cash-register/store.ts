@@ -1,5 +1,8 @@
 import { computed, inject } from '@angular/core';
 import { patchState, signalStore, withComputed, withMethods, withState } from '@ngrx/signals';
+
+import { NzNotificationService } from 'ng-zorro-antd/notification';
+
 import { Api } from '../api';
 import { Product } from '../api/models';
 
@@ -72,7 +75,7 @@ export const SalesStore = signalStore(
   })),
 
   // Methods that mutate the store state
-  withMethods((store, api = inject(Api)) => {
+  withMethods((store, api = inject(Api), notification = inject(NzNotificationService)) => {
     /**
      * Helper: Update the currently selected sale.
      * We get the old sale, transform it, and produce a new sale object,
@@ -217,14 +220,23 @@ export const SalesStore = signalStore(
 
       async checkout(paymentAmount: number) {
         try {
+          // Perform the checkout operation
           await api.checkout(store.currentSale().ticket, paymentAmount, 'Público en general', 'Efectivo');
+          
+          // Close the checkout modal
           this.setShowCheckoutModal(false);
+          
+          // Remove the current sale and add a new one if needed
           this.removeSale(store.currentIdx());
           if (store.sales().length === 0) {
             this.addSale();
           }
+          
+          // Show a success 
+          notification.create('success', 'Caja registradora', `Venta realizada correctamente`);
         } catch (error) {
           console.error('Error checking out:', error);
+          notification.create('error', 'Caja registradora', 'Error al realizar la venta');
         }
       },
 

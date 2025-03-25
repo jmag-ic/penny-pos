@@ -58,7 +58,7 @@ app.on('activate', () => {
 });
 
 // IPC main handlers
-const conn = new SqliteDb('./penny-pos.db');
+const conn = new SqliteDb('./penny-pos.sqlite');
 const repo = new Repository(conn);
 
 // Items API
@@ -67,6 +67,6 @@ ipcMain.handle('getItems', (_, {text, limit, offset}) => {
 });
 
 // Sales API
-ipcMain.handle('checkout', (_, {items, customerName, paymentMethod}) => {
-  return repo.checkout(items, customerName, paymentMethod);
+ipcMain.handle('checkout', (_, {items, paymentAmount, customerName, paymentMethod}) => {
+  return repo.checkout(items, paymentAmount, customerName, paymentMethod);
 });

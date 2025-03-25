@@ -44,14 +44,14 @@ import { SalesStore } from "./store";
     </div>
     
     <!-- Total -->
-    <div class="total p-3">
+    <div class="total text-lg font-bold p-3">
       <span>Total</span><span>\${{ store.total()/100 | number:'1.2-2' }}</span>
     </div>
 
     <!-- Checkout -->
     <div class="checkout pt-3">
-      <button nz-button nzType="default" nzSize="large" nzShape="round">Cancelar</button>
-      <button nz-button nzType="primary" nzSize="large" nzShape="round" class="ml-3" (click)="store.checkout()">Pagar</button>
+      <button nz-button nzType="default" nzSize="large" nzShape="round" (click)="store.setShowCheckoutModal(false)">Cancelar</button>
+      <button nz-button nzType="primary" nzSize="large" nzShape="round" class="ml-3" (click)="store.setShowCheckoutModal(true)">Cobrar</button>
     </div>
   `,
   styles: [`
@@ -101,8 +101,6 @@ import { SalesStore } from "./store";
 
     .total {
       display: flex;
-      font-size: 1.2rem;
-      font-weight: bold;
       justify-content: space-between;
     }
 

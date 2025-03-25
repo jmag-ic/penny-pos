@@ -8,8 +8,8 @@ const repository = <Repository>((<any>window).repository)
 })
 export class Api {
   
-  checkout(items: any[], customerName: string, paymentMethod: string) {
-    return repository.checkout(items, customerName, paymentMethod)
+  checkout(items: any[], paymentAmount: number, customerName: string, paymentMethod: string) {
+    return repository.checkout(items, paymentAmount, customerName, paymentMethod)
   }
 
   getProducts(text: string, limit: number=-1, offset: number=0) {

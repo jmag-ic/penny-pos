@@ -30,12 +30,14 @@ type Sales = {
   sales: Sale[];
   currentIdx: number;
   currentSaleNumber: number;
+  showCheckoutModal: boolean;
 };
 
 const initialState: Sales = {
   sales: [emptySale],  // Start with one empty sale
   currentIdx: 0,
-  currentSaleNumber: 1
+  currentSaleNumber: 1,
+  showCheckoutModal: false
 };
 
 export const SalesStore = signalStore(
@@ -170,6 +172,12 @@ export const SalesStore = signalStore(
         patchState(store, { currentIdx: index });
       },
 
+      setShowCheckoutModal(show: boolean) {
+        patchState(store, { 
+          showCheckoutModal: show
+        });
+      },
+
       // Methods that manage the current sale
       addLineItem(product: Product) {
         updateCurrentSale((sale) => {
@@ -207,9 +215,10 @@ export const SalesStore = signalStore(
         });
       },
 
-      async checkout() {
+      async checkout(paymentAmount: number) {
         try {
-          await api.checkout(store.currentSale().ticket, 'Público en general', 'Efectivo');
+          await api.checkout(store.currentSale().ticket, paymentAmount, 'Público en general', 'Efectivo');
+          this.setShowCheckoutModal(false);
           this.removeSale(store.currentIdx());
           if (store.sales().length === 0) {
             this.addSale();

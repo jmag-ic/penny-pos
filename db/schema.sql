@@ -21,6 +21,7 @@ CREATE TABLE sale (
   id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
   sale_date TEXT DEFAULT (DATETIME()),
   total_amount INTEGER NOT NULL,
+  payment_amount INTEGER NOT NULL,
   customer_name TEXT,
   payment_method TEXT
 );

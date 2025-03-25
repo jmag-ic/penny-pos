@@ -3,17 +3,17 @@ import { AfterViewInit, Component, HostListener, inject, ViewChild } from "@angu
 import { NzGridModule } from "ng-zorro-antd/grid";
 import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzTabsModule } from "ng-zorro-antd/tabs"
-
 import { CtrlCommander } from "../shared/ctrl-commander";
 
 import { ProductFinder } from "./product-finder";
 import { Ticket } from "./ticket";
+import { PaymentModal } from "./payment-modal";
 
 import { SalesStore } from "./store";
 
 @Component({
   selector: "pos-cash-register",
-  imports: [NzGridModule, NzTableModule, NzTabsModule, ProductFinder, Ticket],
+  imports: [NzGridModule, NzTableModule, NzTabsModule, ProductFinder, Ticket, PaymentModal],
   template: `
     <nz-tabset
       [nzSelectedIndex]="store.currentIdx()"
@@ -33,7 +33,8 @@ import { SalesStore } from "./store";
         <pos-ticket/>
       </div>
     </div>
-  `
+    <pos-payment-modal />
+  `,
 })
 export class CashRegister extends CtrlCommander implements AfterViewInit {
 

@@ -4,7 +4,7 @@ import { SqliteDb, utils } from "./sqlite"
 // IRepository is an interface that defines the methods to interact with the database
 export interface IRepository {
   getItems(text: string, limit: number, offset: number): Promise<any[]>
-  checkout(items: any[], customerName: string, paymentMethod: string): Promise<any>
+  checkout(items: any[], paymentAmount: number, customerName: string, paymentMethod: string): Promise<any>
 }
 
 // Repository is a class that implements the IRepository interface
@@ -29,7 +29,7 @@ export class Repository implements IRepository {
   }
 
   // checkout method creates a new sale and sale items in the database
-  checkout(items: any[], customerName: string, paymentMethod: string): Promise<number> {
+  checkout(items: any[], paymentAmount: number, customerName: string, paymentMethod: string): Promise<number> {
     // Calculate total amount of the sale
     const totalAmount = items.reduce((acc, item) => acc + item.product.price * item.quantity, 0)
     
@@ -37,6 +37,7 @@ export class Repository implements IRepository {
       // Create a new sale
       const saleId = await this.conn.insert('sale', {
         total_amount: totalAmount,
+        payment_amount: paymentAmount,
         customer_name: customerName,
         payment_method: paymentMethod
       }) as number;

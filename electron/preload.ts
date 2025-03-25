@@ -9,7 +9,7 @@ contextBridge.exposeInMainWorld("repository", {
   },
 
   // Sales API
-  checkout: (items: any[], customerName: string, paymentMethod: string) => {
-    return ipcRenderer.invoke('checkout', {items, customerName, paymentMethod});
+  checkout: (items: any[], paymentAmount: number, customerName: string, paymentMethod: string) => {
+    return ipcRenderer.invoke('checkout', {items, paymentAmount, customerName, paymentMethod});
   },
 })

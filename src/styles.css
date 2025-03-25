@@ -264,6 +264,15 @@
   margin-bottom: 3rem;
 }
 
+/* Text helpers */
+.text-lg {
+  font-size: 1.25rem;
+}
+
+.font-bold {
+  font-weight: bold;
+}
+
 /* Cursor helpers */
 .cursor-pointer {
   cursor: pointer;

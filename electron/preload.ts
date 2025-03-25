@@ -6,5 +6,10 @@ contextBridge.exposeInMainWorld("repository", {
   // Items API
   getItems: (text: string, limit: number, offset: number) => {
     return ipcRenderer.invoke('getItems', {text, limit, offset});
-  }
+  },
+
+  // Sales API
+  checkout: (items: any[], customerName: string, paymentMethod: string) => {
+    return ipcRenderer.invoke('checkout', {items, customerName, paymentMethod});
+  },
 })

@@ -51,7 +51,7 @@ import { SalesStore } from "./store";
     <!-- Checkout -->
     <div class="checkout pt-3">
       <button nz-button nzType="default" nzSize="large" nzShape="round">Cancelar</button>
-      <button nz-button nzType="primary" nzSize="large" nzShape="round" class="ml-3">Pagar</button>
+      <button nz-button nzType="primary" nzSize="large" nzShape="round" class="ml-3" (click)="store.checkout()">Pagar</button>
     </div>
   `,
   styles: [`

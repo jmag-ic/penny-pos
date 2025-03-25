@@ -207,6 +207,18 @@ export const SalesStore = signalStore(
         });
       },
 
+      async checkout() {
+        try {
+          await api.checkout(store.currentSale().ticket, 'Público en general', 'Efectivo');
+          this.removeSale(store.currentIdx());
+          if (store.sales().length === 0) {
+            this.addSale();
+          }
+        } catch (error) {
+          console.error('Error checking out:', error);
+        }
+      },
+
       clearTicket() {
         updateCurrentSale((sale) => ({
           ...sale,

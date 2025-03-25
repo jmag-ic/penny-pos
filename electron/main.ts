@@ -65,3 +65,8 @@ const repo = new Repository(conn);
 ipcMain.handle('getItems', (_, {text, limit, offset}) => {
   return repo.getItems(text, limit, offset);
 });
+
+// Sales API
+ipcMain.handle('checkout', (_, {items, customerName, paymentMethod}) => {
+  return repo.checkout(items, customerName, paymentMethod);
+});

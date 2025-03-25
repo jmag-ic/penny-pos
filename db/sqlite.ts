@@ -1,4 +1,4 @@
-import { Database } from 'sqlite3';
+import { Database, RunResult } from 'sqlite3';
 
 // QueryBuilder is a class that helps to build SQL statements
 class QueryBuilder {
@@ -119,6 +119,33 @@ export class SqliteDb {
 
   query(tableName: string) {
     return new QueryBuilder(this.db, tableName)
+  }
+
+  insert(tableName: string, data: any) {
+    const params = Object.values(data);
+    const statement = `INSERT INTO ${tableName} (${Object.keys(data).join(', ')}) VALUES (${params.map(() => '?').join(', ')})`
+    
+    return new Promise((resolve, reject) => {
+      this.db.run(statement, params, function(this: RunResult, err: Error) {
+        if (err) reject(err);
+        resolve(this.lastID);
+      });
+    });
+  }
+
+  transaction<T>(callback: () => Promise<T>): Promise<T> {
+    return new Promise((resolve, reject) => {
+      this.db.serialize(() => {
+        this.db.run("BEGIN TRANSACTION");
+        callback().then((result: T) => {
+          this.db.run("COMMIT");
+          resolve(result);
+        }).catch((err: Error) => {
+          this.db.run("ROLLBACK");
+          reject(err);
+        });
+      });
+    });
   }
 }
 

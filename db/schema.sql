@@ -10,8 +10,26 @@ CREATE TABLE item (
   category_id INTEGER REFERENCES category(id),
   description TEXT,
   price INTEGER NOT NULL,
+  cost INTEGER NOT NULL,
   stock INTEGER,
   created_at TEXT DEFAULT (DATETIME()),
   updated_at TEXT DEFAULT (DATETIME()),
   deleted_at TEXT
+);
+
+CREATE TABLE sale (
+  id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+  sale_date TEXT DEFAULT (DATETIME()),
+  total_amount INTEGER NOT NULL,
+  customer_name TEXT,
+  payment_method TEXT
+);
+
+CREATE TABLE sale_item (
+  id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+  sale_id INTEGER REFERENCES sales(id) ON DELETE CASCADE,
+  item_id INTEGER REFERENCES item(id) ON DELETE CASCADE,
+  quantity INTEGER NOT NULL,
+  price INTEGER NOT NULL,
+  cost INTEGER NOT NULL
 );

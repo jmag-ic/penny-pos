@@ -29,7 +29,7 @@ import { SalesStore } from "./store";
           <span>\${{ store.total()/100 | number:'1.2-2' }}</span>
         </div>
         <div class="payment-item">
-          <span class="text-lg" style="width: 300px;">Monto:</span>
+          <span class="text-lg" style="width: 400px;">Cantidad recibida:</span>
           <nz-input-group nzAddOnBefore="$">
             <input nz-input
               #paymentInput
@@ -54,6 +54,10 @@ import { SalesStore } from "./store";
       padding: 0.5rem;
       display: flex;
       justify-content: space-between;
+    }
+    input[type="number"] {
+      text-align: right;
+      font-size: 1.125rem;
     }
   `
 })

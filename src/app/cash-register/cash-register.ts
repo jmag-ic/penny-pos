@@ -57,7 +57,8 @@ export class CashRegister extends CtrlCommander implements AfterViewInit {
       'd': () => this.removeLastLineItem(),
       'n': () => this.addSale(),
       'w': () => this.removeSale(this.store.currentIdx()),
-      'digit': ({key}) => this.selectSale(+key-1)
+      'digit': ({key}) => this.selectSale(+key-1),
+      'enter': () => this.store.setShowCheckoutModal(true)
     });
   }
 

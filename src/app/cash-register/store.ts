@@ -176,6 +176,11 @@ export const SalesStore = signalStore(
       },
 
       setShowCheckoutModal(show: boolean) {
+        // If the user tries to open the checkout modal with an empty ticket, don't do anything
+        if (show && store.currentSale().ticket.length === 0) {
+          return;
+        }
+
         patchState(store, { 
           showCheckoutModal: show
         });

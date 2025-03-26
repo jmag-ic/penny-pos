@@ -17,10 +17,12 @@ export class Repository implements IRepository {
 
     // Extract search text and build like clause for name and description fields
     const { likeClause, params } = utils.exhaustLike(text, 'name', 'description')
+    const whereClause = `${likeClause} OR id IN (SELECT rowid FROM item_fts WHERE name MATCH ?)`
+    params.push(text+'*');
 
     // Build and execute query
     return this.conn.query('item')
-      .where(likeClause, ...params)
+      .where(whereClause, ...params)
       .orderBy('name')
       .limit(limit)
       .offset(offset)

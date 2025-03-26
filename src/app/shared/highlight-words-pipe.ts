@@ -14,13 +14,25 @@ export class HighlightWordsPipe implements PipeTransform {
       return value; 
     }
     
-    // Match whole words case-insensitively
-    const regex = new RegExp(`(${boldWords.join('|')})`, 'gi');
+    // Normalize the input text and search words to remove accents
+    const normalizedValue = this.normalizeText(value);
+    const normalizedWords = boldWords.map(word => this.normalizeText(word));
     
-    // Wrap matches in <b> tags
-    const highlighted = value.replace(regex, '<b>$1</b>');
+    // Match whole words case-insensitively with normalized text
+    const regex = new RegExp(`(${normalizedWords.join('|')})`, 'gi');
+    
+    // Replace matches in normalized text with placeholders
+    let highlighted = normalizedValue.replace(regex, (match, _) => {
+      const startPos = normalizedValue.indexOf(match);
+      const endPos = startPos + match.length;
+      return `<b>${value.substring(startPos, endPos)}</b>`;
+    });
     
     // Sanitize and return the HTML
-    return this.sanitizer.bypassSecurityTrustHtml(highlighted); 
+    return this.sanitizer.bypassSecurityTrustHtml(highlighted);
+  }
+
+  private normalizeText(text: string): string {
+    return text.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
   }
 }

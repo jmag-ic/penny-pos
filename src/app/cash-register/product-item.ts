@@ -8,7 +8,7 @@ import { NzIconModule } from "ng-zorro-antd/icon";
 
 import { HighlightWordsPipe } from "../shared/highlight-words-pipe";
 import { Product } from "../api/models";
-import { SalesStore } from "./store";
+import { SalesStore } from "./cash-register-state";
 
 @Component({
   imports: [NzIconModule, NzListModule, NzTagModule, DecimalPipe, HighlightWordsPipe],

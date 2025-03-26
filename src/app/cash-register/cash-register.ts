@@ -9,7 +9,7 @@ import { ProductFinder } from "./product-finder";
 import { Ticket } from "./ticket";
 import { PaymentModal } from "./payment-modal";
 
-import { SalesStore } from "./store";
+import { SalesStore } from "./cash-register-state";
 
 @Component({
   selector: "pos-cash-register",

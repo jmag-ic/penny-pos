@@ -12,7 +12,7 @@ import { ProductItem } from "./product-item";
 import { InputCleaner } from "../shared/input-cleaner";
 import { InputDebouncer } from "../shared/input-debouncer";
 
-import { SalesStore } from "./store";
+import { SalesStore } from "./cash-register-state";
 import { Product } from "../api/models";
 
 @Component({

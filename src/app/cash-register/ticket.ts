@@ -58,7 +58,7 @@ import { SalesStore } from "./store";
     :host {
       display: flex;
       flex-direction: column;
-      height: calc(100vh - 8rem);
+      height: calc(100vh - 8.6rem);
     }
 
     .table-container {

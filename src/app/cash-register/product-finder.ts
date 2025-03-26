@@ -68,7 +68,7 @@ import { Product } from "../api/models";
     :host {
       display: flex !important;
       flex-direction: column !important;
-      height: calc(100vh - 8rem);
+      height: calc(100vh - 8.6rem);
     }
 
     nz-list {

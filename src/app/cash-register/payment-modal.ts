@@ -5,7 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { NzInputModule } from "ng-zorro-antd/input";
 import { NzModalModule } from 'ng-zorro-antd/modal';
 
-import { SalesStore } from "./cash-register-state";
+import { SalesStore } from "./cash-register-store";
 
 @Component({
   selector: "pos-payment-modal",

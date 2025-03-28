@@ -1,10 +1,12 @@
 import { computed, inject } from '@angular/core';
 import { patchState, signalStore, withComputed, withMethods, withState } from '@ngrx/signals';
+import { rxMethod } from '@ngrx/signals/rxjs-interop';
+import { iif, of, pipe, switchMap, tap } from 'rxjs';
 
 import { NzNotificationService } from 'ng-zorro-antd/notification';
 
-import { Api } from '../api';
-import { Product } from '../api/models';
+import { Product } from '@pos/models';
+import { ApiService } from '../api';
 
 export type LineItem = {
   product: Product;
@@ -75,7 +77,7 @@ export const SalesStore = signalStore(
   })),
 
   // Methods that mutate the store state
-  withMethods((store, api = inject(Api), notification = inject(NzNotificationService)) => {
+  withMethods((store, api = inject(ApiService), notification = inject(NzNotificationService)) => {
     /**
      * Helper: Update the currently selected sale.
      * We get the old sale, transform it, and produce a new sale object,
@@ -256,42 +258,32 @@ export const SalesStore = signalStore(
         // Replace the currently selected sale with a fresh emptySale
         updateCurrentSale(() => ({...emptySale}));
       },
-
-      async searchProducts(searchText: string) {
-        // If the user cleared the search text, just reset products & searching
-        if (!searchText) {
-          updateCurrentSale((sale) => ({
+      
+      searchProducts: rxMethod<string>(
+        pipe(
+          tap(searchText => updateCurrentSale((sale) => ({
             ...sale,
-            products: [],
-            searching: false
-          }));
-          return;
-        }
-
-        // Update the selected sale to store the new search text & searching flag
-        updateCurrentSale((sale) => ({
-          ...sale,
-          searchText,
-          searching: true
-        }));
-
-        // Otherwise, fetch products from API
-        try {
-          const products = await api.getProducts(searchText);
-          updateCurrentSale((sale) => ({
+            searching: true,
+            searchText: searchText,
+          }))),
+          switchMap(searchText => iif(
+            () => !!searchText,
+            // If the search text is not empty, fetch the products from the API
+            api.searchProducts({
+              text: searchText,
+              orderBy: 'name'
+            }),
+            // If the search text is empty, return an empty page
+            of({items: [], total: 0}),
+          )),
+          // Update the currently selected sale with the fetched products
+          tap(page => updateCurrentSale((sale) => ({
             ...sale,
-            products,
-            searching: false
-          }));
-        } catch (error) {
-          console.error('Error fetching products:', error);
-          // Turn off the searching flag
-          updateCurrentSale((sale) => ({
-            ...sale,
-            searching: false
-          }));
-        }
-      },
+            products: page.items,
+            searching: false,
+          })))
+        )
+      ),
 
       updateLineItem(product: Product, quantity: number) {
         updateCurrentSale((sale) => ({

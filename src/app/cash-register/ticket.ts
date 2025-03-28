@@ -7,7 +7,7 @@ import { NzIconModule } from "ng-zorro-antd/icon";
 import { NzInputNumberModule } from 'ng-zorro-antd/input-number';
 import { NzListModule } from "ng-zorro-antd/list";
 
-import { SalesStore } from "./cash-register-state";
+import { SalesStore } from "./cash-register-store";
 
 @Component({
   selector: "pos-ticket",

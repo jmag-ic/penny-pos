@@ -4,5 +4,6 @@ export interface Product {
   description: string
   category: string
   price: number
+  cost: number
   stock: number | null
 }

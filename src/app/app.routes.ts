@@ -1,6 +1,9 @@
 import { Routes } from '@angular/router';
-import { CashRegister } from './cash-register';
+
 import { InConstruction } from './shared/in-construction';
+
+import { CashRegister } from './cash-register';
+import { Inventory } from './inventory/inventory';
 
 export const routes: Routes = [
   {redirectTo: 'cash-register', path: '', pathMatch: 'full'},
@@ -18,7 +21,7 @@ export const routes: Routes = [
     }
   }, {
     path: 'inventory',
-    component: InConstruction,
+    component: Inventory,
     data: {
       breadcrumb: 'Inventario'
     }

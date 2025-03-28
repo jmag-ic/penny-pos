@@ -7,7 +7,7 @@ class QueryBuilder {
   private _columns: string;
   private _where: string = '';
   private _orderBy: string = '';
-  private _limit: number = 0;
+  private _limit: number = -1;
   private _offset: number = 0;
   private params: any[] = [];
 
@@ -57,10 +57,10 @@ class QueryBuilder {
     if (this._orderBy) {
       query += ` ORDER BY ${this._orderBy}`
     }
-    if (Number.isInteger(this._limit)) {
+    if (this._limit > 0) {
       query += ` LIMIT ${this._limit}`
     }
-    if (Number.isInteger(this._offset)) {
+    if (this._offset > 0) {
       query += ` OFFSET ${this._offset}`
     }
 
@@ -84,14 +84,15 @@ class QueryExecutor {
   }
 
   // all method exposes the all method of the SQLite Database object as a promise
-  async all() {
+  async all<T>() {
     return this.promiseOf(this.query, 'all', this.params)
-      .then((rows: unknown) => <any[]>rows)
+      .then((rows: unknown) => <T[]>rows)
   }
 
   // get method exposes the get method of the SQLite Database object as a promise
-  async get() {
+  async get<T>() {
     return this.promiseOf(this.query, 'get', this.params)
+      .then((row: unknown) => <T>row)
   }
 
   // promiseOf method is a helper method to wrap the callback-based SQLite methods into promises
@@ -115,6 +116,10 @@ export class SqliteDb {
 
   constructor(dbConnString: string) {
     this.db = new Database(dbConnString)
+  }
+
+  getDb() {
+    return this.db
   }
 
   query(tableName: string) {

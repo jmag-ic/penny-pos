@@ -1,18 +1,19 @@
 import { Injectable } from "@angular/core";
-import { Repository } from "../../../db/repository";
-
-const repository = <Repository>((<any>window).repository)
+import { IAPI } from "@pos/electron/api";
+import { PageParams, Product, Page } from "@pos/models";
+import { from, Observable } from "rxjs";
+const api = (<IAPI>((<any>window).api))
 
 @Injectable({
   providedIn: 'root'
 })
-export class Api {
+export class ApiService {
   
   checkout(items: any[], paymentAmount: number, customerName: string, paymentMethod: string) {
-    return repository.checkout(items, paymentAmount, customerName, paymentMethod)
+    return api.checkout(items, paymentAmount, customerName, paymentMethod)
   }
 
-  getProducts(text: string, limit: number=-1, offset: number=0) {
-    return repository.getItems(text, limit, offset)
+  searchProducts(pageParams: PageParams): Observable<Page<Product>> {
+    return from(api.searchItems(pageParams));
   }
 }

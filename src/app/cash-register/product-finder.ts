@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, ElementRef, HostBinding, inject, Input, input, OnDestroy, QueryList, ViewChild, ViewChildren } from "@angular/core";
+import { AfterViewInit, Component, ElementRef, inject, OnDestroy, QueryList, ViewChild, ViewChildren } from "@angular/core";
 import { ActiveDescendantKeyManager } from "@angular/cdk/a11y";
 import { Subscription } from "rxjs";
 
@@ -8,12 +8,13 @@ import { NzInputModule } from "ng-zorro-antd/input";
 import { NzListModule } from "ng-zorro-antd/list";
 import { NzSpinModule } from "ng-zorro-antd/spin";
 
+import { Product } from "@pos/models";
+
 import { ProductItem } from "./product-item";
 import { InputCleaner } from "../shared/input-cleaner";
 import { InputDebouncer } from "../shared/input-debouncer";
 
-import { SalesStore } from "./cash-register-state";
-import { Product } from "../api/models";
+import { SalesStore } from "./cash-register-store";
 
 @Component({
   selector: "pos-product-finder",

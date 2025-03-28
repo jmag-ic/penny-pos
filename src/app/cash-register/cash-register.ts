@@ -3,13 +3,14 @@ import { AfterViewInit, Component, HostListener, inject, ViewChild } from "@angu
 import { NzGridModule } from "ng-zorro-antd/grid";
 import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzTabsModule } from "ng-zorro-antd/tabs"
+
 import { CtrlCommander } from "../shared/ctrl-commander";
 
 import { ProductFinder } from "./product-finder";
 import { Ticket } from "./ticket";
 import { PaymentModal } from "./payment-modal";
 
-import { SalesStore } from "./cash-register-state";
+import { SalesStore } from "./cash-register-store";
 
 @Component({
   selector: "pos-cash-register",

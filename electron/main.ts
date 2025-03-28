@@ -2,7 +2,7 @@ import { app, BrowserWindow, ipcMain } from 'electron';
 import * as path from 'path';
 import * as url from 'url';
 
-import { Repository } from '../db/repository'
+import { PosService } from './service'
 import { SqliteDb } from '../db/sqlite';
 
 // Keep a global reference of the window object, if you don't, the window will
@@ -59,14 +59,14 @@ app.on('activate', () => {
 
 // IPC main handlers
 const conn = new SqliteDb('./penny-pos.sqlite');
-const repo = new Repository(conn);
+const posService = new PosService(conn);
 
 // Items API
-ipcMain.handle('getItems', (_, {text, limit, offset}) => {
-  return repo.getItems(text, limit, offset);
+ipcMain.handle('searchItems', (_, {pageParams}) => {
+  return posService.search('item', ['name', 'description'], pageParams, true);
 });
 
 // Sales API
 ipcMain.handle('checkout', (_, {items, paymentAmount, customerName, paymentMethod}) => {
-  return repo.checkout(items, paymentAmount, customerName, paymentMethod);
+  return posService.checkout(items, paymentAmount, customerName, paymentMethod);
 });

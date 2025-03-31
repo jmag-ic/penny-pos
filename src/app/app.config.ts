@@ -5,19 +5,40 @@ import { provideRouter } from '@angular/router';
 import { provideNzI18n, es_ES } from 'ng-zorro-antd/i18n';
 import { IconDefinition } from '@ant-design/icons-angular';
 import { provideNzIcons } from 'ng-zorro-antd/icon';
-import { DatabaseOutline, DollarOutline, HomeOutline ,PlusOutline, SearchOutline, SettingOutline, ShoppingOutline, StockOutline, TeamOutline, TruckOutline } from '@ant-design/icons-angular/icons';
+import {
+  DatabaseOutline,
+  DollarOutline,
+  ExportOutline,
+  FilePdfOutline,
+  FileExcelOutline,
+  HomeOutline,
+  ImportOutline,
+  PlusOutline,
+  SearchOutline,
+  SettingOutline,
+  ShoppingOutline,
+  StockOutline,
+  TagOutline,
+  TeamOutline,
+  TruckOutline,
+} from '@ant-design/icons-angular/icons';
 
 import { routes } from './app.routes';
 
 const icons: IconDefinition[] = [
   DatabaseOutline,
   DollarOutline,
+  ExportOutline,
+  FilePdfOutline,
+  FileExcelOutline,
   HomeOutline,
+  ImportOutline,
   PlusOutline,
   SearchOutline,
   SettingOutline,
   ShoppingOutline,
   StockOutline,
+  TagOutline,
   TeamOutline,
   TruckOutline,
 ];

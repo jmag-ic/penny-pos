@@ -28,7 +28,7 @@ export type Column = {
       [nzLoading]="store()?.loading()"
       [nzData]="store()?.items() ?? []"
       [nzScroll]="scroll()"
-      [nzShowPagination]="(store()?.totalPages() ?? 0) > 1"
+      [nzShowPagination]="true"
       [nzFrontPagination]="false"
       [nzPageIndex]="store()?.currentPage() ?? 1"
       [nzPageSize]="store()?.pageSize() ?? defaultPageSize"
@@ -39,7 +39,11 @@ export type Column = {
       <thead>
         <tr>
           @for(column of columns(); track column.key) {
-            <th>{{ column.label }}</th>
+            <th
+              [nzSortDirections]="['ascend', 'descend', null]"
+              [nzSortOrder]="store()?.getSortOrder(column.key) ?? null"
+              (nzSortOrderChange)="store()?.setOrderBy(column.key, $event)"
+            >{{ column.label }}</th>
           }
         </tr>
       </thead>

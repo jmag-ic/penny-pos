@@ -5,16 +5,23 @@ import { map, Observable, pipe, switchMap, tap } from 'rxjs';
 
 import { Page, PageParams } from '@pos/models';
 
+const sortOrderDict: { [key: string]: string } = {
+  'ascend': 'ASC',
+  'descend': 'DESC',
+};
+
+export type SortOrder = string | null;
 export interface IPaginationStore {
   items: () => any[];
   currentPage: () => number;
   pageSize: () => number;
   total: () => number;
   loading: () => boolean;
-  orderBy: () => { [key: string]: 'asc' | 'desc' | undefined };
+  orderBy: () => { [key: string]: string };
+  getSortOrder: (key: string) => SortOrder;
   setCurrentPage: (page: number) => void;
   setPageSize: (size: number) => void;
-  setOrderBy: (field: string, direction: 'asc' | 'desc' | undefined) => void;
+  setOrderBy: (field: string, order: SortOrder) => void;
   totalPages: () => number;
 }
 
@@ -25,7 +32,7 @@ export type PaginationState<T> = {
   pageSize: number;
   total: number;
   loading: boolean;
-  orderBy: { [key: string]: 'asc' | 'desc' | undefined };
+  orderBy: { [key: string]: string };
 };
 
 export const withPagination = <T>(Loader: ProviderToken<{
@@ -54,6 +61,9 @@ export const withPagination = <T>(Loader: ProviderToken<{
     withMethods((store) => {
       const loader = inject(Loader);
       return {
+        getSortOrder: (key: string) => {
+          return store.orderBy()[key] ?? null;
+        },
         load: rxMethod<void>(
           pipe(
             // Start loading
@@ -62,8 +72,8 @@ export const withPagination = <T>(Loader: ProviderToken<{
             map(() => {
               const offset = (store.currentPage() - 1) * store.pageSize();
               const orderBy = Object.entries(store.orderBy())
-                .map(([key, value]) => `${key} ${value}`)
-                .join(',');
+                .map(([key, value]) => `${key} ${sortOrderDict[value]}`)
+                .join(', ');
 
               return {
                 text: store.searchText(),
@@ -85,12 +95,16 @@ export const withPagination = <T>(Loader: ProviderToken<{
           patchState(store, { searchText, currentPage: 1 });
           this.load();
         },
-        setOrderBy(field: string, direction: 'asc' | 'desc' | undefined) {
-          if (!direction) {
-            delete store.orderBy()[field];
-          } else {
-            patchState(store, { orderBy: { ...store.orderBy(), [field]: direction } });
+        setOrderBy(field: string, order: SortOrder) {
+          let orderBy = { ...store.orderBy() };
+
+          if (!order) {
+            delete orderBy[field];
+          } else if (order && order in sortOrderDict) {
+            orderBy[field] = order;
           }
+          
+          patchState(store, { orderBy: orderBy });
           this.load();
         },
         setPageSize(size: number) {

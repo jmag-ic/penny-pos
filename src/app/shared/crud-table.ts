@@ -1,19 +1,6 @@
 import { Component, inject, input, InjectionToken } from "@angular/core";
 import { NzTableModule } from "ng-zorro-antd/table";
-
-export interface ITableStore<T> {
-  items: () => T[];
-  loading: () => boolean;
-  total: () => number;
-  currentPage: () => number;
-  pageSize: () => number;
-  setCurrentPage: (page: number) => void;
-  setPageSize: (size: number) => void;
-  getSortOrder: (key: string) => 'ascend' | 'descend' | null;
-  setOrderBy: (key: string, order: 'ascend' | 'descend' | null) => void;
-}
-
-export const TABLE_STORE = new InjectionToken<ITableStore<any>>('TABLE_STORE');
+import { ICrudTableStore, CRUD_TABLE_STORE } from "./with-crud-table";
 
 export type Column<T> = {
   key: keyof T;
@@ -22,7 +9,7 @@ export type Column<T> = {
 }
 
 @Component({
-  selector: 'pos-paginated-table',
+  selector: 'pos-crud-table',
   imports: [NzTableModule],
   template: `
     <ng-template #totalTemplate>
@@ -37,7 +24,7 @@ export type Column<T> = {
       nzSize="small"
       nzBordered="true"
       nzPaginationType="small"
-      [nzLoading]="store.loading()"
+      [nzLoading]="store.loadingTable()"
       [nzData]="store.items()"
       [nzScroll]="scroll()"
       [nzShowPagination]="true"
@@ -71,12 +58,12 @@ export type Column<T> = {
     </nz-table>
   `
 })
-export class PosPaginatedTable<T> {
+export class PosCrudTable<T> {
   defaultPageSize = 20;
   columns = input<Column<T>[]>([]);
   scroll = input<{ x?: string | null, y?: string | null }>({ x: null, y: null });
-  
-  protected store = inject<ITableStore<T>>(TABLE_STORE);
+
+  protected store = inject<ICrudTableStore<T>>(CRUD_TABLE_STORE);
 
   protected onSortOrderChange(key: string, order: string | null): void {
     this.store.setOrderBy(key, order as 'ascend' | 'descend' | null);

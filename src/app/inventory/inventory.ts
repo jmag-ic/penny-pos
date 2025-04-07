@@ -1,4 +1,4 @@
-import { Component, HostListener, inject, OnInit, ViewChild, ElementRef, computed } from "@angular/core";
+import { Component, HostListener, inject, OnInit, ViewChild, ElementRef, computed, InjectionToken } from "@angular/core";
 import { DecimalPipe } from "@angular/common";
 import { Validators } from "@angular/forms";
 
@@ -11,18 +11,19 @@ import { Product } from "@pos/models";
 
 import { CtrlCommander } from "../shared/ctrl-commander";
 import { Formatter } from "../shared/formatter";
-import { PosFormModal, FORM_MODAL_STORE } from "../shared/form-modal";
 import { InputCleaner } from "../shared/input-cleaner";
 import { InputDebouncer } from "../shared/input-debouncer";
-import { PosPaginatedTable, Column, TABLE_STORE } from "../shared/table";
+import { PosCrudModalForm } from "../shared/crud-modal-form";
+import { PosCrudTable, Column } from "../shared/crud-table";
 
 import { InventoryStore } from "./inventory-store";
+import { CRUD_TABLE_STORE } from "../shared/with-crud-table";
 
 @Component({
   selector: 'pos-inventory',
   imports: [
-    PosPaginatedTable,
-    PosFormModal,
+    PosCrudTable,
+    PosCrudModalForm,
     NzInputModule,
     NzButtonModule,
     NzIconModule,
@@ -80,7 +81,7 @@ import { InventoryStore } from "./inventory-store";
       </ul>
     </nz-dropdown-menu>
 
-    <pos-paginated-table
+    <pos-crud-table
       [columns]="columns"
       [scroll]="{ y: 'calc(100vh - 13.2rem)' }"
     />
@@ -90,8 +91,7 @@ import { InventoryStore } from "./inventory-store";
   providers: [
     Formatter, 
     DecimalPipe,
-    { provide: TABLE_STORE, useExisting: InventoryStore },
-    { provide: FORM_MODAL_STORE, useExisting: InventoryStore },
+    { provide: CRUD_TABLE_STORE, useExisting: InventoryStore },
   ],
 })
 export class Inventory extends CtrlCommander implements OnInit {
@@ -110,7 +110,7 @@ export class Inventory extends CtrlCommander implements OnInit {
 
   formConfig = computed(() => ({
     name: { label: 'Nombre', type: 'string', control: ['', Validators.required] },
-    category: { label: 'Categoría', type: 'autocomplete', control: ['', Validators.required], options: this.inventoryStore.categoriesSelectOpts() },
+    categoryId: { label: 'Categoría', type: 'autocomplete', control: ['', Validators.required], options: this.inventoryStore.categoriesSelectOpts() },
     description: { label: 'Descripción', type: 'text', control: '' },
     stock: { label: 'Stock', type: 'number', control: '' },
     price: { label: 'Precio', type: 'number', control: ['', [Validators.required, Validators.min(0)]] },

@@ -1,5 +1,5 @@
 import { Component, computed, ElementRef, inject, InjectionToken, input, QueryList, ViewChildren, signal, effect, OnInit, output } from "@angular/core";
-import { FormBuilder, FormGroup, Validators } from "@angular/forms";
+import { FormBuilder, Validators } from "@angular/forms";
 import { FormsModule, ReactiveFormsModule } from "@angular/forms";
 
 import { NzAutocompleteModule } from 'ng-zorro-antd/auto-complete';
@@ -11,7 +11,8 @@ import { NzSelectModule } from 'ng-zorro-antd/select';
 import { NzDatePickerModule } from 'ng-zorro-antd/date-picker';
 import { NzInputNumberModule } from 'ng-zorro-antd/input-number';
 import { NzSwitchModule } from 'ng-zorro-antd/switch';
-import { map, startWith } from 'rxjs/operators';
+import { ICrudTableStore, CRUD_TABLE_STORE } from "./with-crud-table";
+
 export type FormModalConfig = { 
   [key: string]: { 
     label: string, 
@@ -20,21 +21,6 @@ export type FormModalConfig = {
     options?: { label: string, value: any }[]
   } 
 }
-
-export interface IFormModalStore {
-  loading: () => boolean;
-  formTitle: () => string;
-  visibleForm: () => boolean;
-  editMode: () => boolean;
-  item: () => any;
-  hideModalForm: () => void;
-  getFormValue: (item: any, form: FormGroup) => any;
-  create: (item: any) => void;
-  update: (item: any) => void;
-  delete: (item: any) => void;
-}
-
-export const FORM_MODAL_STORE = new InjectionToken<IFormModalStore>('FORM_MODAL_STORE');
 
 @Component({
   selector: 'pos-form-modal',
@@ -56,8 +42,8 @@ export const FORM_MODAL_STORE = new InjectionToken<IFormModalStore>('FORM_MODAL_
       [nzCentered]="true"
       [nzMaskClosable]="false"
       [nzBodyStyle]="{ 'max-height': '65vh', 'overflow-y': 'auto' }"
-      [nzVisible]="store.visibleForm()" 
-      [nzTitle]="store.formTitle()"
+      [nzVisible]="store.modalVisible()" 
+      [nzTitle]="store.modalTitle()"
       [nzOkText]="'Aceptar'"
       [nzCancelText]="'Cancelar'"
       (nzOnOk)="onOk()"
@@ -66,7 +52,7 @@ export const FORM_MODAL_STORE = new InjectionToken<IFormModalStore>('FORM_MODAL_
       (nzAfterClose)="afterClose()"
     >
       <ng-container *nzModalContent>
-        <nz-spin [nzSpinning]="store.loading()">
+        <nz-spin [nzSpinning]="store.loadingForm()">
           <form nz-form [nzAutoTips]="autoTips" [formGroup]="formGroup()" (ngSubmit)="onOk()">
             @for (field of formKeys(); track field) {
               <nz-form-item>
@@ -110,8 +96,8 @@ export const FORM_MODAL_STORE = new InjectionToken<IFormModalStore>('FORM_MODAL_
     </nz-modal>
   `
 })
-export class PosFormModal {
-  protected store = inject<IFormModalStore>(FORM_MODAL_STORE);
+export class PosCrudModalForm<T> {
+  protected store = inject<ICrudTableStore<T>>(CRUD_TABLE_STORE);
   protected formBuilder = inject(FormBuilder);
 
   @ViewChildren('inputs') inputs!: QueryList<ElementRef<HTMLInputElement>>;
@@ -170,11 +156,11 @@ export class PosFormModal {
       return;
     }
 
-    const formValue = this.store.getFormValue(this.store.item(), this.formGroup());
+    const formValue = this.store.getFormValue(this.store.selectedItem(), this.formGroup());
     let apiCalled = false;
     
-    if (this.store.editMode()) {
-      if (this.store.item() !== formValue) {
+    if (this.store.formEditMode()) {
+      if (this.store.selectedItem() !== formValue) {
         this.store.update(formValue);
         apiCalled = true;
       }

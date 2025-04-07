@@ -1,5 +1,6 @@
 import { SqliteDb, utils } from "../db/sqlite"
 import { PageParams } from "../models"
+import { objectToSnakeCase } from "../utils/strings"
 
 export class PosService {
   
@@ -93,10 +94,3 @@ export class PosService {
     });
   }
 }
-
-const objectToSnakeCase = (obj: any) => {
-  return Object.keys(obj).reduce((acc: any, key) => {
-    acc[key.toLowerCase().replace(/([A-Z])/g, '_$1')] = obj[key];
-    return acc;
-  }, {} as any);
-};

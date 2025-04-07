@@ -2,16 +2,12 @@ import { computed, inject } from "@angular/core";
 import { signalStore, withHooks, withState, patchState, withComputed, withMethods } from "@ngrx/signals";
 import { Product, Catalog } from "@pos/models";
 
-import { withPagination } from "../shared/with-pagination";
-import { withCrudOperations } from "../shared/with-crud-operations";
-
 import { InventoryService } from "./inventory-service";
 import { ApiService } from "../api";
-
+import { withCrudTable } from "../shared/with-crud-table";
 export const InventoryStore = signalStore(
   { providedIn: 'root' },
-  withPagination<Product>(InventoryService),
-  withCrudOperations<Product>(InventoryService),
+  withCrudTable<Product>(InventoryService),
   withState({
     categories: [] as Catalog[],
   }),

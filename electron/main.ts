@@ -70,3 +70,24 @@ ipcMain.handle('searchItems', (_, {pageParams}) => {
 ipcMain.handle('checkout', (_, {items, paymentAmount, customerName, paymentMethod}) => {
   return posService.checkout(items, paymentAmount, customerName, paymentMethod);
 });
+
+// Items API
+ipcMain.handle('createItem', (_, {item}) => {
+  return posService.create('item', item);
+});
+
+
+ipcMain.handle('updateItem', (_, {item}) => {
+  return posService.update(item.id, 'item', item);
+});
+
+ipcMain.handle('deleteItem', (_, {item}) => {
+  return posService.delete(item.id, 'item');
+});
+
+// Catalogs API
+ipcMain.handle('getCategories', () => {
+  return posService.getCatalog('category', 'name');
+});
+
+

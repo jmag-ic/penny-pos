@@ -5,6 +5,26 @@ export class PosService {
   
   constructor(private conn: SqliteDb) {}
 
+  create(table: string, data: any): Promise<any> {
+    return this.conn.insert(table, objectToSnakeCase(data))
+  }
+
+  update(id: number, table: string, data: any): Promise<any> {
+    return this.conn.update(id, table, objectToSnakeCase(data))
+  }
+
+  delete(id: number, table: string): Promise<any> {
+    return this.conn.delete(id, table)
+  }
+
+  getCatalog(table: string, orderBy?: string): Promise<any> {
+    const query = this.conn.query(table)
+    if (orderBy) {
+      query.orderBy(orderBy)
+    }
+    return query.build().all()
+  }
+
   search(table: string, searchColumns: string[], pageParams: PageParams, fts: boolean = false): Promise<any> {
     const itemsQuery = this.conn.query(table)
     const totalQuery = this.conn.query(table).columns('COUNT(*) total')
@@ -73,3 +93,10 @@ export class PosService {
     });
   }
 }
+
+const objectToSnakeCase = (obj: any) => {
+  return Object.keys(obj).reduce((acc: any, key) => {
+    acc[key.toLowerCase().replace(/([A-Z])/g, '_$1')] = obj[key];
+    return acc;
+  }, {} as any);
+};

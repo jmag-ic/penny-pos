@@ -1,21 +1,33 @@
-import { Component, input } from "@angular/core";
+import { Component, inject, input, InjectionToken } from "@angular/core";
 import { NzTableModule } from "ng-zorro-antd/table";
-import { IPaginationStore } from "./with-pagination";
 
-export type Column = {
-  key: string;
+export interface ITableStore<T> {
+  items: () => T[];
+  loading: () => boolean;
+  total: () => number;
+  currentPage: () => number;
+  pageSize: () => number;
+  setCurrentPage: (page: number) => void;
+  setPageSize: (size: number) => void;
+  getSortOrder: (key: string) => 'ascend' | 'descend' | null;
+  setOrderBy: (key: string, order: 'ascend' | 'descend' | null) => void;
+}
+
+export const TABLE_STORE = new InjectionToken<ITableStore<any>>('TABLE_STORE');
+
+export type Column<T> = {
+  key: keyof T;
   label: string;
-  type: 'text' | 'number' | 'date' | 'boolean';
   format?: (value: any) => any;
 }
 
 @Component({
-  selector: 'pos-table-dynamic',
+  selector: 'pos-paginated-table',
   imports: [NzTableModule],
   template: `
     <ng-template #totalTemplate>
       <span>
-        Total: {{ store()?.total() ?? 0 }}
+        Total: {{ store.total() }}
       </span>
     </ng-template>
     <nz-table
@@ -25,45 +37,50 @@ export type Column = {
       nzSize="small"
       nzBordered="true"
       nzPaginationType="small"
-      [nzLoading]="store()?.loading()"
-      [nzData]="store()?.items() ?? []"
+      [nzLoading]="store.loading()"
+      [nzData]="store.items()"
       [nzScroll]="scroll()"
       [nzShowPagination]="true"
       [nzFrontPagination]="false"
-      [nzPageIndex]="store()?.currentPage() ?? 1"
-      [nzPageSize]="store()?.pageSize() ?? defaultPageSize"
-      [nzTotal]="store()?.total() ?? 0"
-      (nzPageIndexChange)="store()?.setCurrentPage($event)"
-      (nzPageSizeChange)="store()?.setPageSize($event)"
+      [nzPageIndex]="store.currentPage()"
+      [nzPageSize]="store.pageSize()"
+      [nzTotal]="store.total()"
+      (nzPageIndexChange)="store.setCurrentPage($event)"
+      (nzPageSizeChange)="store.setPageSize($event)"
     >
       <thead>
         <tr>
-          @for(column of columns(); track column.key) {
+          @for(column of columns(); let i = $index; track i) {
             <th
               [nzSortDirections]="['ascend', 'descend', null]"
-              [nzSortOrder]="store()?.getSortOrder(column.key) ?? null"
-              (nzSortOrderChange)="store()?.setOrderBy(column.key, $event)"
+              [nzSortOrder]="store.getSortOrder(column.key.toString())"
+              (nzSortOrderChange)="onSortOrderChange(column.key.toString(), $event)"
             >{{ column.label }}</th>
           }
         </tr>
       </thead>
       <tbody>
-        @for(row of store()?.items() ?? []; let i = $index; track i) {
+        @for(row of store.items(); let i = $index; track i) {
           <tr>
-            @for(column of columns(); track column.key) {
+            @for(column of columns(); let j = $index; track j) {
               <td>{{ column.format ? column.format(row[column.key]) : row[column.key] }}</td>
             }
           </tr>
         }
       </tbody>
     </nz-table>
-  `,
+  `
 })
-export class PosTable {
+export class PosPaginatedTable<T> {
   defaultPageSize = 20;
-  columns = input<Column[]>([]);
-  store = input<IPaginationStore>();
+  columns = input<Column<T>[]>([]);
   scroll = input<{ x?: string | null, y?: string | null }>({ x: null, y: null });
+  
+  protected store = inject<ITableStore<T>>(TABLE_STORE);
+
+  protected onSortOrderChange(key: string, order: string | null): void {
+    this.store.setOrderBy(key, order as 'ascend' | 'descend' | null);
+  }
 }
 
 

@@ -138,6 +138,30 @@ export class SqliteDb {
     });
   }
 
+  update(id: number, tableName: string, data: any) {
+    const params = Object.values(data).concat(id);
+    const statement = `UPDATE ${tableName} SET ${Object.keys(data).map(key => `${key} = ?`).join(', ')} WHERE id = ?`
+    
+    return new Promise((resolve, reject) => {
+      this.db.run(statement, params, (err: Error) => {
+        if (err) reject(err);
+        resolve(id);
+      });
+    });
+  }
+
+  delete(id: number, tableName: string) {
+    const statement = `DELETE FROM ${tableName} WHERE id = ?`
+    
+    return new Promise<number>((resolve, reject) => {
+      this.db.run(statement, [id], (err: Error) => {
+        if (err) reject(err);
+        resolve(id);
+      });
+    });
+  }
+
+
   transaction<T>(callback: () => Promise<T>): Promise<T> {
     return new Promise((resolve, reject) => {
       this.db.serialize(() => {

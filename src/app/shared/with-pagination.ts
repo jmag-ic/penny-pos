@@ -11,19 +11,6 @@ const sortOrderDict: { [key: string]: string } = {
 };
 
 export type SortOrder = string | null;
-export interface IPaginationStore {
-  items: () => any[];
-  currentPage: () => number;
-  pageSize: () => number;
-  total: () => number;
-  loading: () => boolean;
-  orderBy: () => { [key: string]: string };
-  getSortOrder: (key: string) => SortOrder;
-  setCurrentPage: (page: number) => void;
-  setPageSize: (size: number) => void;
-  setOrderBy: (field: string, order: SortOrder) => void;
-  totalPages: () => number;
-}
 
 export type PaginationState<T> = {
   searchText: string;
@@ -35,12 +22,11 @@ export type PaginationState<T> = {
   orderBy: { [key: string]: string };
 };
 
-export const withPagination = <T>(Loader: ProviderToken<{
-  load: (
-    pageParams: PageParams,
-  ) => Observable<Page<T>>;
-}>) => {
+interface IPageLoader<T> {
+  load: (pageParams: PageParams) => Observable<Page<T>>;
+}
 
+export const withPagination = <T>(Loader: ProviderToken<IPageLoader<T>>) => {
   const initialState: PaginationState<T> = {
     searchText: '',
     items: [],

@@ -1,4 +1,4 @@
-export interface Catalog {
+export interface CatalogEntity {
   id: string;
   name: string;
   createdAt: Date;

@@ -8,7 +8,7 @@ import { NzInputModule } from "ng-zorro-antd/input";
 import { NzListModule } from "ng-zorro-antd/list";
 import { NzSpinModule } from "ng-zorro-antd/spin";
 
-import { Product } from "@pos/models";
+import { ProductEntity } from "@pos/models";
 
 import { ProductItem } from "./product-item";
 import { InputCleaner } from "../shared/input-cleaner";
@@ -116,7 +116,7 @@ export class ProductFinder implements AfterViewInit, OnDestroy {
   }
 
   // handleClickOnProductItem method handles click events on product items
-  protected handleClickOnProductItem(product: Product) {
+  protected handleClickOnProductItem(product: ProductEntity) {
     this.focusSearchInput();
     this.store.addLineItem(product);
   }

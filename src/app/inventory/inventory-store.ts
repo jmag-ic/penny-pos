@@ -1,6 +1,6 @@
 import { computed, inject } from "@angular/core";
 import { signalStore, withHooks, withState, patchState, withComputed, withMethods } from "@ngrx/signals";
-import { Product, Catalog } from "@pos/models";
+import { ProductEntity, CatalogEntity } from "@pos/models";
 
 import { InventoryService } from "./inventory-service";
 import { ApiService } from "../api";
@@ -9,9 +9,9 @@ import { ProductViewModel } from "../view-models/product.view-model";
 
 export const InventoryStore = signalStore(
   { providedIn: 'root' },
-  withCrudTable<ProductViewModel, Product>(InventoryService),
+  withCrudTable<ProductViewModel, ProductEntity>(InventoryService),
   withState({
-    categories: [] as Catalog[],
+    categories: [] as CatalogEntity[],
   }),
   withComputed((store) => ({
     categoriesSelectOpts: computed(() => store.categories().map(category => ({ label: category.name, value: category.id }))),

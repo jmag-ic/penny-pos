@@ -2,16 +2,16 @@ import { ipcRenderer } from "electron";
 import { contextBridge } from "electron";
 
 import { IAPI } from "./api";
-import { PageParams, Product } from "../models";
+import { PageParams, ProductEntity } from "../models";
 
 export const api: IAPI = {
-  createItem: (item: Product) => {
+  createItem: (item: ProductEntity) => {
     return ipcRenderer.invoke('createItem', {item});
   },
-  updateItem: (item: Product) => {
+  updateItem: (item: ProductEntity) => {
     return ipcRenderer.invoke('updateItem', {item});
   },
-  deleteItem: (item: Product) => {
+  deleteItem: (item: ProductEntity) => {
     return ipcRenderer.invoke('deleteItem', {item});
   },
   

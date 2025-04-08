@@ -1,6 +1,6 @@
 import { Injectable } from "@angular/core";
 import { IAPI } from "@pos/electron/api";
-import { PageParams, Product, Page } from "@pos/models";
+import { PageParams, ProductEntity, Page } from "@pos/models";
 import { from, Observable } from "rxjs";
 import { ProductViewModel } from "../view-models/product.view-model";
 
@@ -19,15 +19,15 @@ export class ApiService {
     return from(api.searchItems(pageParams));
   }
 
-  createProduct(product: Product) {    
+  createProduct(product: ProductEntity) {    
     return api.createItem(product);
   }
 
-  updateProduct(product: Product) {
+  updateProduct(product: ProductEntity) {
     return api.updateItem(product);
   }
 
-  deleteProduct(product: Product) {
+  deleteProduct(product: ProductEntity) {
     return api.deleteItem(product);
   }
 

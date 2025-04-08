@@ -1,4 +1,4 @@
-export interface Product {
+export interface ProductEntity {
   id: number
   name: string
   description: string
@@ -9,4 +9,8 @@ export interface Product {
   createdAt: Date
   updatedAt: Date
   deletedAt: Date | null
+}
+
+export interface ProductData extends ProductEntity {
+  categoryName: string
 }

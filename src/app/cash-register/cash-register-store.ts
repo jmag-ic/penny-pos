@@ -5,11 +5,11 @@ import { iif, of, pipe, switchMap, tap } from 'rxjs';
 
 import { NzNotificationService } from 'ng-zorro-antd/notification';
 
-import { Product } from '@pos/models';
+import { ProductEntity } from '@pos/models';
 import { ApiService } from '../api';
 
 export type LineItem = {
-  product: Product;
+  product: ProductEntity;
   quantity: number;
   price: number;
   total: number;
@@ -19,7 +19,7 @@ export type Sale = {
   id: number;
   searching: boolean;
   searchText: string;
-  products: Product[];
+  products: ProductEntity[];
   ticket: LineItem[];
 };
 
@@ -99,7 +99,7 @@ export const SalesStore = signalStore(
     }
 
     // Utility: update an existing line item's quantity
-    function updateLineItem(sale: Sale, product: Product, quantity: number) {
+    function updateLineItem(sale: Sale, product: ProductEntity, quantity: number) {
       return sale.ticket.map((lineItem) =>
         lineItem.product.id === product.id
           ? {
@@ -112,7 +112,7 @@ export const SalesStore = signalStore(
     }
 
     // Utility: add a new line item and return the updated ticket
-    function addNewLineItem(sale: Sale, product: Product) {
+    function addNewLineItem(sale: Sale, product: ProductEntity) {
       return [
         ...sale.ticket,
         {
@@ -189,7 +189,7 @@ export const SalesStore = signalStore(
       },
 
       // Methods that manage the current sale
-      addLineItem(product: Product) {
+      addLineItem(product: ProductEntity) {
         updateCurrentSale((sale) => {
           const lineItem = findLineItem(sale, product.id);
           return lineItem
@@ -208,7 +208,7 @@ export const SalesStore = signalStore(
         });
       },
 
-      removeLineItem(product: Product) {
+      removeLineItem(product: ProductEntity) {
         updateCurrentSale((sale) => ({
           ...sale,
           ticket: sale.ticket.filter((item) => item.product.id !== product.id)
@@ -285,7 +285,7 @@ export const SalesStore = signalStore(
         )
       ),
 
-      updateLineItem(product: Product, quantity: number) {
+      updateLineItem(product: ProductEntity, quantity: number) {
         updateCurrentSale((sale) => ({
           ...sale,
           ticket: updateLineItem(sale, product, quantity)

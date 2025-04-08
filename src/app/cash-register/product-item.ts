@@ -6,7 +6,7 @@ import { NzListModule } from "ng-zorro-antd/list";
 import { NzTagModule } from "ng-zorro-antd/tag";
 import { NzIconModule } from "ng-zorro-antd/icon";
 
-import { Product } from "@pos/models";
+import { ProductEntity } from "@pos/models";
 import { HighlightWordsPipe } from "../shared/highlight-words-pipe";
 import { SalesStore } from "./cash-register-store";
 
@@ -70,7 +70,7 @@ import { SalesStore } from "./cash-register-store";
 })
 export class ProductItem implements Highlightable {
   // Inputs
-  @Input() product!: Product;
+  @Input() product!: ProductEntity;
   @Input() disabled?: boolean | undefined;
 
   // Template references

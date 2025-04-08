@@ -2,6 +2,7 @@ import { Injectable } from "@angular/core";
 import { IAPI } from "@pos/electron/api";
 import { PageParams, Product, Page } from "@pos/models";
 import { from, Observable } from "rxjs";
+import { ProductViewModel } from "../view-models/product.view-model";
 
 const api = (<IAPI>((<any>window).api))
 
@@ -14,7 +15,7 @@ export class ApiService {
     return api.checkout(items, paymentAmount, customerName, paymentMethod)
   }
 
-  searchProducts(pageParams: PageParams): Observable<Page<Product>> {
+  searchProducts(pageParams: PageParams): Observable<Page<ProductViewModel>> {
     return from(api.searchItems(pageParams));
   }
 

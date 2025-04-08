@@ -5,9 +5,11 @@ import { Product, Catalog } from "@pos/models";
 import { InventoryService } from "./inventory-service";
 import { ApiService } from "../api";
 import { withCrudTable } from "../shared/with-crud-table";
+import { ProductViewModel } from "../view-models/product.view-model";
+
 export const InventoryStore = signalStore(
   { providedIn: 'root' },
-  withCrudTable<Product>(InventoryService),
+  withCrudTable<ProductViewModel, Product>(InventoryService),
   withState({
     categories: [] as Catalog[],
   }),

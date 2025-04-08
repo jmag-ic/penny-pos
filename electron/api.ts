@@ -1,7 +1,7 @@
 import { Page, PageParams, Product } from "../models";
 import { Catalog } from "../models/catalog";
 export interface IAPI {
-  searchItems(pageParams: PageParams): Promise<Page<Product>>
+  searchItems(pageParams: PageParams): Promise<Page<any>>
   createItem(item: Product): Promise<any>
   updateItem(item: Product): Promise<any>
   deleteItem(item: Product): Promise<any>

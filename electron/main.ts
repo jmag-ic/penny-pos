@@ -63,7 +63,9 @@ const posService = new PosService(conn);
 
 // Items API
 ipcMain.handle('searchItems', (_, {pageParams}) => {
-  return posService.search('item', ['name', 'description'], pageParams, true);
+  const columns = 'i.*, c.name as category_name';
+  const tableJoin = 'item i INNER JOIN category c ON i.category_id = c.id';
+  return posService.getPage(tableJoin, ['name', 'description'], pageParams, columns, true);
 });
 
 // Sales API

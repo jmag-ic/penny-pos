@@ -1,8 +1,10 @@
 import { inject, Injectable } from "@angular/core";
-import { PageParams, Product } from "@pos/models";
-import { ApiService } from "../api";
+import { PageParams } from "@pos/models";
+import { ProductViewModel } from "../view-models/product.view-model";
+import { Product } from "@pos/models";
 import { FormGroup } from "@angular/forms";
 import { map } from "rxjs";
+import { ApiService } from "../api";
 
 @Injectable({
   providedIn: 'root'
@@ -11,31 +13,31 @@ export class InventoryService {
   private api = inject(ApiService);
 
   load(pageParams: PageParams) {
-    return this.api.searchProducts(pageParams).pipe(map(
-      page => ({
+    return this.api.searchProducts(pageParams).pipe(
+      map(page => ({
         ...page,
         items: page.items.map(item => ({
           ...item,
           price: item.price / 100,
           cost: item.cost / 100
         }))
-      })
-    ))
+      }))
+    )
   }
 
-  create(product: Product) {
+  create(product: ProductViewModel) {
     return this.api.createProduct(product);
   }
 
-  update(product: Product) {
+  update(product: ProductViewModel) {
     return this.api.updateProduct(product);
   }
 
-  delete(product: Product) {
+  delete(product: ProductViewModel) {
     return this.api.deleteProduct(product);
   }
 
-  getFormValue(product: Product, form: FormGroup): Product {
+  getFormValue(product: ProductViewModel, form: FormGroup): Product {
     const formValue = form.getRawValue();
     if (!!product && product.id) {
       formValue.id = product.id;

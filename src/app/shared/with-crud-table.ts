@@ -72,16 +72,16 @@ const sortOrderDict: { [key: string]: string } = {
 
 export type SortOrder = string | null;
 
-interface ICrudTableService<T> {
+interface ICrudTableService<T, D> {
   create: (item: T) => Promise<T>;
   delete: (item: T) => Promise<void>;
-  getFormValue: (item: T, form: FormGroup) => T;
+  getFormValue: (item: T, form: FormGroup) => D;
   load: (pageParams: PageParams) => Observable<Page<T>>;
   update: (item: T) => Promise<T>;
 }
 
-export const withCrudTable = <T>(
-  CrudTableService: ProviderToken<ICrudTableService<T>>,
+export const withCrudTable = <T, D>(
+  CrudTableService: ProviderToken<ICrudTableService<T, D>>,
 ) => {
   const initialState: CrudTableState<T> = {
     currentPage: 1,

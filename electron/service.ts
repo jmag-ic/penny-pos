@@ -1,5 +1,5 @@
 import { SqliteDb, utils } from "../db/sqlite"
-import { PageParams } from "../models"
+import { Page, PageParams } from "../models"
 import { objectToSnakeCase, objectToCamelCase } from "../utils/strings"
 
 export class PosService {
@@ -26,8 +26,8 @@ export class PosService {
     return query.build().all()
   }
 
-  search(table: string, searchColumns: string[], pageParams: PageParams, fts: boolean = false): Promise<any> {
-    const itemsQuery = this.conn.query(table)
+  getPage(table: string, searchColumns: string[], pageParams: PageParams, columns: string = '*', fts: boolean = false): Promise<Page<any>> {
+    const itemsQuery = this.conn.query(table).columns(columns)
     const totalQuery = this.conn.query(table).columns('COUNT(*) total')
 
     if (pageParams.text) {

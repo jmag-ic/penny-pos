@@ -16,7 +16,7 @@ import { PosCrudTable } from "../shared/crud-table";
 import { CRUD_TABLE_STORE } from "../shared/with-crud-table";
 
 import { InventoryStore } from "./inventory-store";
-import { Product } from "@pos/models";
+import { ProductViewModel } from "../view-models/product.view-model";
 
 @Component({
   selector: 'pos-inventory',
@@ -96,7 +96,7 @@ import { Product } from "@pos/models";
 export class Inventory extends CtrlCommander implements OnInit {
 
   @ViewChild('searchInput') searchInput!: ElementRef<HTMLInputElement>;
-  @ViewChild(PosCrudTable) crudTable!: PosCrudTable<Product>;
+  @ViewChild(PosCrudTable) crudTable!: PosCrudTable<ProductViewModel>;
 
 
   // Implement the handleKeyDownEvent method from the CtrlCommander class
@@ -121,7 +121,7 @@ export class Inventory extends CtrlCommander implements OnInit {
   columns = computed(() => [
     { key: 'id', label: 'ID', width: '90px' },
     { key: 'name', label: 'Nombre', width: '300px' },
-    { key: 'categoryId', label: 'Categoría', width: '120px' },
+    { key: 'categoryName', label: 'Categoría', width: '120px' },
     { key: 'stock', label: 'Stock', width: '90px' },
     { key: 'price', label: 'Precio', width: '120px' },
     { key: 'cost', label: 'Costo', width: '120px' },

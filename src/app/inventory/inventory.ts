@@ -1,4 +1,4 @@
-import { Component, HostListener, inject, OnInit, ViewChild, ElementRef, computed, InjectionToken } from "@angular/core";
+import { Component, HostListener, inject, OnInit, ViewChild, ElementRef, computed } from "@angular/core";
 import { DecimalPipe } from "@angular/common";
 import { Validators } from "@angular/forms";
 
@@ -7,17 +7,16 @@ import { NzDropDownModule } from 'ng-zorro-antd/dropdown';
 import { NzIconModule } from "ng-zorro-antd/icon";
 import { NzInputModule } from "ng-zorro-antd/input";
 
-import { Product } from "@pos/models";
-
 import { CtrlCommander } from "../shared/ctrl-commander";
 import { Formatter } from "../shared/formatter";
 import { InputCleaner } from "../shared/input-cleaner";
 import { InputDebouncer } from "../shared/input-debouncer";
 import { PosCrudModalForm } from "../shared/crud-modal-form";
-import { PosCrudTable, Column } from "../shared/crud-table";
+import { PosCrudTable } from "../shared/crud-table";
+import { CRUD_TABLE_STORE } from "../shared/with-crud-table";
 
 import { InventoryStore } from "./inventory-store";
-import { CRUD_TABLE_STORE } from "../shared/with-crud-table";
+import { Product } from "@pos/models";
 
 @Component({
   selector: 'pos-inventory',
@@ -33,18 +32,7 @@ import { CRUD_TABLE_STORE } from "../shared/with-crud-table";
   ],
   template: `
     <div style="display: flex; justify-content: space-between;" class="mb-3">
-      <nz-button-group>
-        <button nz-button nzType="primary" (click)="onNewProduct()">
-          <nz-icon nzType="tag" />
-          Nuevo
-        </button>
-        <button nz-button nzType="default" disabled>
-          <nz-icon nzType="import" />
-          Importar
-        </button>
-      </nz-button-group>
-      <div style="display: flex; justify-content: space-between; width: 50%;">
-      <nz-input-group nzSearch [nzAddOnAfter]="suffixIconButton">
+    <nz-input-group nzSearch [nzAddOnAfter]="suffixIconButton" style="width: 50%;">
         <input
           #searchInput
           type="text"
@@ -56,14 +44,25 @@ import { CRUD_TABLE_STORE } from "../shared/with-crud-table";
           (textChanged)="inventoryStore.setSearchText($event)"
         />
       </nz-input-group>
-      <button nz-button nz-dropdown [nzDropdownMenu]="exportMenu" nzPlacement="bottomRight" disabled>
-        <nz-icon nzType="export" /> Exportar
-      </button>
+      
+      <div style="display: flex; justify-content: space-between;">
+      
+
+      <nz-button-group>
+        <button nz-button nzType="default" disabled>
+          <nz-icon nzType="import" />
+          Importar
+        </button>
+        <button nz-button nz-dropdown [nzDropdownMenu]="exportMenu" nzPlacement="bottomRight" disabled>
+          <nz-icon nzType="export" /> Exportar
+        </button>
+      </nz-button-group>
       </div>
     </div>
 
     <pos-crud-table
-      [columns]="columns"
+      [columns]="columns()"
+      [metadata]="metadata()"
       [scroll]="{ y: 'calc(100vh - 13.2rem)' }"
     />
 
@@ -86,7 +85,7 @@ import { CRUD_TABLE_STORE } from "../shared/with-crud-table";
       </ul>
     </nz-dropdown-menu>
 
-    <pos-form-modal [config]="formConfig()" (onClose)="onModalFormClose($event)" />
+    <pos-form-modal [config]="formConfig()" />
   `,
   providers: [
     Formatter, 
@@ -97,6 +96,8 @@ import { CRUD_TABLE_STORE } from "../shared/with-crud-table";
 export class Inventory extends CtrlCommander implements OnInit {
 
   @ViewChild('searchInput') searchInput!: ElementRef<HTMLInputElement>;
+  @ViewChild(PosCrudTable) crudTable!: PosCrudTable<Product>;
+
 
   // Implement the handleKeyDownEvent method from the CtrlCommander class
   // to handle the keydown event
@@ -117,37 +118,29 @@ export class Inventory extends CtrlCommander implements OnInit {
     cost: { label: 'Costo', type: 'number', control: ['', [Validators.required, Validators.min(0)]] },
   }));
 
-  columns: Column<Product>[] = [
+  columns = computed(() => [
     { key: 'id', label: 'ID', width: '90px' },
     { key: 'name', label: 'Nombre', width: '300px' },
     { key: 'categoryId', label: 'Categoría', width: '120px' },
     { key: 'stock', label: 'Stock', width: '90px' },
     { key: 'price', label: 'Precio', width: '120px' },
     { key: 'cost', label: 'Costo', width: '120px' },
-  ];
+  ]);
+
+  metadata = computed(() => ({
+    elementName: 'producto',
+    elementGender: 'm' as const,
+    nameField: 'name',
+  }));
 
   constructor() {
     super({
-      'n': () => this.onNewProduct(),
+      'n': () => this.crudTable.onNew(),
       'b': () => this.searchInput.nativeElement.focus(),
     });
   }
 
   ngOnInit() {
     this.inventoryStore.load();
-  }
-
-  onNewProduct() {
-    this.inventoryStore.showModalForm('Nuevo producto', null);
-  }
-
-  onEditProduct(product: Product) {
-    this.inventoryStore.showModalForm('Editar producto', product);
-  }
-
-  onModalFormClose(event: {formValue: any, apiCalled: boolean}) {
-    if (event.apiCalled) {
-      this.inventoryStore.load();
-    }
   }
 }

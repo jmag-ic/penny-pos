@@ -103,7 +103,7 @@ export class PosCrudModalForm<T> {
   @ViewChildren('inputs') inputs!: QueryList<ElementRef<HTMLInputElement>>;
 
   config = input<FormModalConfig>({});
-  onClose = output<{formValue: any, apiCalled: boolean}>();
+  onClose = output<any>();
 
   // get the form keys
   formKeys = computed(() => Object.keys(this.config()));
@@ -160,19 +160,16 @@ export class PosCrudModalForm<T> {
     }
 
     const formValue = this.store.getFormValue(this.store.selectedItem(), this.formGroup());
-    let apiCalled = false;
     
     if (this.store.formEditMode()) {
       if (this.store.selectedItem() !== formValue) {
         this.store.update(formValue);
-        apiCalled = true;
       }
     } else {
       this.store.create(formValue);
-      apiCalled = true;
     }
     
-    this.onClose.emit({ formValue, apiCalled });
+    this.onClose.emit(formValue);
     this.store.hideModalForm();
   }
 

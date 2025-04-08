@@ -1,13 +1,22 @@
 import { computed, inject, InjectionToken, ProviderToken } from "@angular/core";
 import { FormGroup } from "@angular/forms";
+import { rxMethod } from "@ngrx/signals/rxjs-interop";
+import { signalStoreFeature, withState, withMethods, patchState, withComputed } from "@ngrx/signals";
+import { Observable, pipe, tap, map, switchMap } from "rxjs";
+
+import { NzNotificationService } from "ng-zorro-antd/notification";
+
 import { Page } from "@pos/models";
 import { PageParams } from "@pos/models";
-import { Observable, pipe, tap, map, switchMap } from "rxjs";
-import { signalStoreFeature, withState, withMethods, patchState, withComputed } from "@ngrx/signals";
-import { NzNotificationService } from "ng-zorro-antd/notification";
-import { rxMethod } from "@ngrx/signals/rxjs-interop";
 
 export const CRUD_TABLE_STORE = new InjectionToken<ICrudTableStore<any>>('CRUD_TABLE_STORE');
+
+export type CrudTableMetadata = {
+  elementGender: 'f' | 'm';
+  elementName: string;
+  idField?: string;
+  nameField?: string;
+}
 
 export type CrudTableState<T> = {
   currentPage: number;
@@ -22,11 +31,14 @@ export type CrudTableState<T> = {
   searchText: string;
   selectedItem: T | null;
   total: number;
+  metadata: CrudTableMetadata;
 }
 
 export interface ICrudTableStore<T> {
   // State
   currentPage: () => number;
+  elementName: () => string;
+  elementSubject: () => string;
   formEditMode: () => boolean;
   items: () => T[];
   loadingTable: () => boolean;
@@ -39,13 +51,14 @@ export interface ICrudTableStore<T> {
   total: () => number;
   // Methods
   create: (item: T) => Promise<T>;
-  update: (item: T) => Promise<T>;
   delete: (item: T) => Promise<void>;
+  update: (item: T) => Promise<T>;
   getFormValue: (item: T, form: FormGroup) => T;
   getSortOrder: (key: string) => 'ascend' | 'descend' | null;
   hideModalForm: () => void;
   load: () => void;
   setCurrentPage: (page: number) => void;
+  setMetadata: (metadata: CrudTableMetadata | undefined) => void;
   setOrderBy: (key: string, order: 'ascend' | 'descend' | null) => void;
   setPageSize: (size: number) => void;
   setSelectedItem: (item: T) => void;
@@ -83,6 +96,10 @@ export const withCrudTable = <T>(
     searchText: '',
     selectedItem: null,
     total: 0,
+    metadata: {
+      elementGender: 'm',
+      elementName: 'elemento'
+    }
   }
 
   return signalStoreFeature(
@@ -91,6 +108,8 @@ export const withCrudTable = <T>(
       totalPages: computed(() => Math.ceil(store.total() / store.pageSize())),
       hasNextPage: computed(() => store.currentPage() < Math.ceil(store.total() / store.pageSize())),
       hasPreviousPage: computed(() => store.currentPage() > 1),
+      elementName: computed(() => store.metadata().elementName),
+      elementSubject: computed(() => `${store.metadata().elementGender === 'm' ? 'el' : 'la'} ${store.metadata().elementName}`),
     })),
     withMethods(store => {
       const crudService = inject(CrudTableService);
@@ -161,6 +180,12 @@ export const withCrudTable = <T>(
         setSelectedItem(item: T) {
           patchState(store, { selectedItem: item });
         },
+        setMetadata(metadata: CrudTableMetadata | undefined) {
+          if (!metadata) {
+            return;
+          }
+          patchState(store, { metadata });
+        },
         nextPage() {
           if (store.currentPage() < store.totalPages()) {
             this.setCurrentPage(store.currentPage() + 1);
@@ -203,7 +228,8 @@ export const withCrudTable = <T>(
               modalVisible: false,
               loadingForm: false,
             });
-            notification.create('success', store.modalTitle(), `Elemento creado correctamente`);
+            notification.create('success', `Nuevo ${store.metadata().elementName}`, `Se ha creado correctamente ${store.elementSubject()}`);
+            this.load();
           } catch (error) {
             patchState(store, {
               loadingForm: false,
@@ -224,7 +250,8 @@ export const withCrudTable = <T>(
               modalVisible: false,
               loadingForm: false,
             });
-            notification.create('success', store.modalTitle(), `Elemento actualizado correctamente`);
+            notification.create('success', `Actualizar ${store.metadata().elementName}`, `Se ha actualizado correctamente ${store.elementSubject()}`);
+            this.load();
           } catch (error) {
             patchState(store, {
               loadingForm: false,
@@ -234,11 +261,13 @@ export const withCrudTable = <T>(
         async delete (item: T) {
           try {
             await crudService.delete(item);
+            notification.create('success', `Eliminar ${store.metadata().elementName}`, `Se ha eliminado correctamente ${store.elementSubject()}`);
+            this.load();
           } catch (error) {
             console.error(error);
-            notification.create('error', store.modalTitle(), `Error al eliminar el elemento`);
+            notification.create('error', `Eliminar ${store.metadata().elementName}`, `Error al eliminar ${store.elementSubject()}`);
           }
-        },
+        }
       }
     })
   );

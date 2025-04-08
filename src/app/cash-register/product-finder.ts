@@ -49,7 +49,7 @@ import { SalesStore } from "./cash-register-store";
       </button>
     </ng-template>
     
-    <nz-list nzBordered nzSize="small">
+    <nz-list nzBordered nzSize="small" style="background-color: #fff;">
       @if (store.currentSale().searching) {
         <div style="text-align: center; padding: 1rem;">
           <nz-spin nzSimple></nz-spin>

@@ -1,16 +1,19 @@
-import { Component, inject, input, InjectionToken } from "@angular/core";
+import { Component, computed, inject, input } from "@angular/core";
 import { NzTableModule } from "ng-zorro-antd/table";
+import { NzButtonModule } from "ng-zorro-antd/button";
+import { NzIconModule } from "ng-zorro-antd/icon";
 import { ICrudTableStore, CRUD_TABLE_STORE } from "./with-crud-table";
 
 export type Column<T> = {
   key: keyof T;
   label: string;
+  width?: string;
   format?: (value: any) => any;
 }
 
 @Component({
   selector: 'pos-crud-table',
-  imports: [NzTableModule],
+  imports: [NzTableModule, NzButtonModule, NzIconModule],
   template: `
     <ng-template #totalTemplate>
       <span>
@@ -39,23 +42,45 @@ export type Column<T> = {
         <tr>
           @for(column of columns(); let i = $index; track i) {
             <th
+              [nzWidth]="column.width ?? null"
               [nzSortDirections]="['ascend', 'descend', null]"
               [nzSortOrder]="store.getSortOrder(column.key.toString())"
               (nzSortOrderChange)="onSortOrderChange(column.key.toString(), $event)"
             >{{ column.label }}</th>
           }
+          <!-- Actions column -->
+          <th nzWidth="100px"></th>
         </tr>
       </thead>
       <tbody>
-        @for(row of store.items(); let i = $index; track i) {
-          <tr>
+        @for(item of store.items(); let i = $index; track i) {
+          <tr
+            [class.selected]="store.selectedItem() === item"
+            (click)="store.setSelectedItem(item)"
+          >
             @for(column of columns(); let j = $index; track j) {
-              <td>{{ column.format ? column.format(row[column.key]) : row[column.key] }}</td>
+              <td>{{ column.format ? column.format(item[column.key]) : item[column.key] }}</td>
             }
+            <!-- Actions column -->
+            <td>
+              <div style="display: flex; justify-content: center; gap: 4px;">
+                <button nz-button nzType="default" nzShape="circle" (click)="store.showModalForm('Editar elemento', item)">
+                  <i nz-icon nzType="edit" nzTheme="outline"></i>
+                </button> 
+                <button nz-button nzType="default" nzShape="circle" nzDanger (click)="store.delete(item)">
+                  <i nz-icon nzType="delete" nzTheme="outline"></i>
+                </button>
+              </div>
+            </td>
           </tr>
         }
       </tbody>
     </nz-table>
+  `,
+  styles: `
+    .selected {
+      background-color: #bae7ff !important;
+    }
   `
 })
 export class PosCrudTable<T> {

@@ -1,6 +1,6 @@
 import { SqliteDb, utils } from "../db/sqlite"
 import { PageParams } from "../models"
-import { objectToSnakeCase } from "../utils/strings"
+import { objectToSnakeCase, objectToCamelCase } from "../utils/strings"
 
 export class PosService {
   
@@ -59,7 +59,7 @@ export class PosService {
       const items = await itemsQuery.build().all()
       const { total } = await totalQuery.build().get<{ total: number }>()
       return {
-        items: items,
+        items: objectToCamelCase(items),
         total: total
       } 
     })

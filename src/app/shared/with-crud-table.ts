@@ -48,6 +48,7 @@ export interface ICrudTableStore<T> {
   setCurrentPage: (page: number) => void;
   setOrderBy: (key: string, order: 'ascend' | 'descend' | null) => void;
   setPageSize: (size: number) => void;
+  setSelectedItem: (item: T) => void;
   showModalForm: (title: string, item: T | null) => void;
 }
 
@@ -122,7 +123,8 @@ export const withCrudTable = <T>(
             tap((page) => patchState(store, { 
               items: page.items,
               total: page.total,
-              loadingTable: false
+              loadingTable: false,
+              // selectedItem: store.selectedItem() ? page.items.find(item => JSON.stringify(item) === JSON.stringify(store.selectedItem())) : null
             })),
           )
         ),
@@ -156,6 +158,9 @@ export const withCrudTable = <T>(
           }
           this.load();
         },
+        setSelectedItem(item: T) {
+          patchState(store, { selectedItem: item });
+        },
         nextPage() {
           if (store.currentPage() < store.totalPages()) {
             this.setCurrentPage(store.currentPage() + 1);
@@ -170,10 +175,7 @@ export const withCrudTable = <T>(
         },
         hideModalForm () {
           patchState(store, {
-            modalVisible: false,
-            modalTitle: '',
-            selectedItem: null,
-            formEditMode: false,
+            modalVisible: false
           });
         },
         showModalForm (title: string, item: T | null) {
@@ -181,6 +183,7 @@ export const withCrudTable = <T>(
             modalVisible: true,
             modalTitle: title,
             selectedItem: item,
+            formEditMode: !!item,
           });
         },
         getFormValue (item: T, form: FormGroup) {
@@ -196,7 +199,10 @@ export const withCrudTable = <T>(
 
           try {
             await crudService.create(item);
-            this.hideModalForm();
+            patchState(store, {
+              modalVisible: false,
+              loadingForm: false,
+            });
             notification.create('success', store.modalTitle(), `Elemento creado correctamente`);
           } catch (error) {
             patchState(store, {
@@ -214,7 +220,10 @@ export const withCrudTable = <T>(
 
           try {
             await crudService.update(item);
-            this.hideModalForm();
+            patchState(store, {
+              modalVisible: false,
+              loadingForm: false,
+            });
             notification.create('success', store.modalTitle(), `Elemento actualizado correctamente`);
           } catch (error) {
             patchState(store, {

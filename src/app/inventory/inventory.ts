@@ -62,6 +62,11 @@ import { CRUD_TABLE_STORE } from "../shared/with-crud-table";
       </div>
     </div>
 
+    <pos-crud-table
+      [columns]="columns"
+      [scroll]="{ y: 'calc(100vh - 13.2rem)' }"
+    />
+
     <ng-template #suffixIconButton>
       <button nz-button nzType="primary" nzSearch>
         <span nz-icon nzType="search"></span>
@@ -80,11 +85,6 @@ import { CRUD_TABLE_STORE } from "../shared/with-crud-table";
         </li>
       </ul>
     </nz-dropdown-menu>
-
-    <pos-crud-table
-      [columns]="columns"
-      [scroll]="{ y: 'calc(100vh - 13.2rem)' }"
-    />
 
     <pos-form-modal [config]="formConfig()" (onClose)="onModalFormClose($event)" />
   `,
@@ -118,11 +118,12 @@ export class Inventory extends CtrlCommander implements OnInit {
   }));
 
   columns: Column<Product>[] = [
-    { key: 'id', label: 'ID' },
-    { key: 'name', label: 'Nombre' },
-    { key: 'stock', label: 'Stock' },
-    { key: 'price', label: 'Precio', format: (value) => this.formatter.currency(value) },
-    { key: 'cost', label: 'Costo', format: (value) => this.formatter.currency(value) },
+    { key: 'id', label: 'ID', width: '90px' },
+    { key: 'name', label: 'Nombre', width: '300px' },
+    { key: 'categoryId', label: 'Categoría', width: '120px' },
+    { key: 'stock', label: 'Stock', width: '90px' },
+    { key: 'price', label: 'Precio', width: '120px' },
+    { key: 'cost', label: 'Costo', width: '120px' },
   ];
 
   constructor() {

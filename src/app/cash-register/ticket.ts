@@ -65,6 +65,7 @@ import { SalesStore } from "./cash-register-store";
       border: 1px solid #ddd;
       overflow-y: auto;
       flex: 1;
+      background-color: #fff;
     }
 
     table {

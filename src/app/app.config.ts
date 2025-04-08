@@ -21,13 +21,17 @@ import {
   TagOutline,
   TeamOutline,
   TruckOutline,
+  EditOutline,
+  DeleteOutline,
 } from '@ant-design/icons-angular/icons';
 
 import { routes } from './app.routes';
 
 const icons: IconDefinition[] = [
   DatabaseOutline,
+  DeleteOutline,
   DollarOutline,
+  EditOutline,
   ExportOutline,
   FilePdfOutline,
   FileExcelOutline,

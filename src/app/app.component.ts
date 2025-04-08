@@ -55,7 +55,7 @@ import { AppStore } from './app.store';
       <nz-content>
         <div class="inner-content p-3">
           <!-- Top bar -->
-          <div class="top-bar mt-3">
+          <div class="top-bar mb-3">
             <nz-breadcrumb [nzAutoGenerate]="true" />
             <nz-avatar nzText="U" />
           </div>
@@ -80,7 +80,7 @@ import { AppStore } from './app.store';
 
   .inner-content {
     height: 100vh;
-    background: #fff;
+    background:rgb(244, 244, 244);
   }
   
   .top-bar {

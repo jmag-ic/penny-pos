@@ -133,6 +133,9 @@ export class PosCrudModalForm<T> {
 
   afterOpen() {
     setTimeout(() => {
+      if (this.store.formEditMode() && this.store.selectedItem()) {
+        this.formGroup().patchValue(this.store.selectedItem() as any);
+      }
       this.inputs.first.nativeElement.focus();
     }, 0);
   }

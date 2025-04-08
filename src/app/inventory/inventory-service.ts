@@ -41,8 +41,8 @@ export class InventoryService {
       formValue.id = product.id;
     }
 
-    formValue.price = formValue.price ? +formValue.price*100 : null;
-    formValue.cost = formValue.cost ? +formValue.cost*100 : null;
+    formValue.price = formValue.price > -1 ? +formValue.price*100 : 0;
+    formValue.cost = formValue.cost > -1 ? +formValue.cost*100 : 0;
     
     return formValue as Product;
   }

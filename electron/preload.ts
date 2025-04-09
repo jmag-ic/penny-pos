@@ -1,26 +1,27 @@
 import { ipcRenderer } from "electron";
 import { contextBridge } from "electron";
 
-import { IAPI } from "./api";
-import { PageParams, ProductEntity } from "../models";
+import { PageParams, ProductEntity, SaleDTO } from "../models";
 
-export const api: IAPI = {
+import { IAPI } from "./api";
+
+const api: IAPI = {
   createItem: (item: ProductEntity) => {
     return ipcRenderer.invoke('createItem', {item});
   },
   updateItem: (item: ProductEntity) => {
     return ipcRenderer.invoke('updateItem', {item});
   },
-  deleteItem: (item: ProductEntity) => {
-    return ipcRenderer.invoke('deleteItem', {item});
+  deleteItem: (id: number) => {
+    return ipcRenderer.invoke('deleteItem', {id});
   },
   
   searchItems: (pageParams: PageParams) => {
     return ipcRenderer.invoke('searchItems', { pageParams });
   },
   
-  checkout: (items: any[], paymentAmount: number, customerName: string, paymentMethod: string) => {
-    return ipcRenderer.invoke('checkout', {items, paymentAmount, customerName, paymentMethod});
+  checkout: (saleDTO: Partial<SaleDTO>) => {
+    return ipcRenderer.invoke('checkout', saleDTO);
   },
 
   getCategories: () => {

@@ -1,8 +1,7 @@
 import { Injectable } from "@angular/core";
 import { IAPI } from "@pos/electron/api";
-import { PageParams, ProductEntity, Page } from "@pos/models";
+import { PageParams, ProductEntity, Page, ProductDTO, SaleDTO } from "@pos/models";
 import { from, Observable } from "rxjs";
-import { ProductViewModel } from "../view-models/product.view-model";
 
 const api = (<IAPI>((<any>window).api))
 
@@ -11,11 +10,11 @@ const api = (<IAPI>((<any>window).api))
 })
 export class ApiService {
   
-  checkout(items: any[], paymentAmount: number, customerName: string, paymentMethod: string) {
-    return api.checkout(items, paymentAmount, customerName, paymentMethod)
+  checkout(saleDTO: Partial<SaleDTO>) {
+    return api.checkout(saleDTO)
   }
 
-  searchProducts(pageParams: PageParams): Observable<Page<ProductViewModel>> {
+  searchProducts(pageParams: PageParams): Observable<Page<ProductDTO>> {
     return from(api.searchItems(pageParams));
   }
 
@@ -28,7 +27,7 @@ export class ApiService {
   }
 
   deleteProduct(product: ProductEntity) {
-    return api.deleteItem(product);
+    return api.deleteItem(product.id);
   }
 
   getCategories() {

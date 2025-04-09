@@ -1,3 +1,5 @@
+import { CatalogEntity } from "./catalog";
+
 export interface ProductEntity {
   id: number
   name: string
@@ -11,6 +13,6 @@ export interface ProductEntity {
   deletedAt: Date | null
 }
 
-export interface ProductData extends ProductEntity {
-  categoryName: string
+export interface ProductDTO extends ProductEntity {
+  category: CatalogEntity
 }

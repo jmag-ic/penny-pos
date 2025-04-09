@@ -1,9 +1,8 @@
-import { app, BrowserWindow, ipcMain } from 'electron';
+import { app, BrowserWindow } from 'electron';
 import * as path from 'path';
 import * as url from 'url';
 
-import { PosService } from './service'
-import { SqliteDb } from '../db/sqlite';
+import { loadHandlers } from './handlers';
 
 // Keep a global reference of the window object, if you don't, the window will
 let mainWindow: BrowserWindow;
@@ -57,39 +56,5 @@ app.on('activate', () => {
   }
 });
 
-// IPC main handlers
-const conn = new SqliteDb('./penny-pos.sqlite');
-const posService = new PosService(conn);
-
-// Items API
-ipcMain.handle('searchItems', (_, {pageParams}) => {
-  const columns = 'i.*, c.name as category_name';
-  const tableJoin = 'item i INNER JOIN category c ON i.category_id = c.id';
-  return posService.getPage(tableJoin, ['name', 'description'], pageParams, columns, true);
-});
-
-// Sales API
-ipcMain.handle('checkout', (_, {items, paymentAmount, customerName, paymentMethod}) => {
-  return posService.checkout(items, paymentAmount, customerName, paymentMethod);
-});
-
-// Items API
-ipcMain.handle('createItem', (_, {item}) => {
-  return posService.create('item', item);
-});
-
-
-ipcMain.handle('updateItem', (_, {item}) => {
-  return posService.update(item.id, 'item', item);
-});
-
-ipcMain.handle('deleteItem', (_, {item}) => {
-  return posService.delete(item.id, 'item');
-});
-
-// Catalogs API
-ipcMain.handle('getCategories', () => {
-  return posService.getCatalog('category', 'name');
-});
-
-
+// load the handlers for the IPC
+loadHandlers();

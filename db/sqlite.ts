@@ -1,7 +1,7 @@
 import { Database, RunResult } from 'sqlite3';
-
+import { objectToCamelCase, objectToSnakeCase } from '../utils';
 // QueryBuilder is a class that helps to build SQL statements
-class QueryBuilder {
+export class QueryBuilder {
   private db: Database;
   private table: string;
   private _columns: string;
@@ -18,38 +18,38 @@ class QueryBuilder {
   }
 
   // columns method sets the columns to be selected
-  columns(columns: string) {
+  columns(columns: string): QueryBuilder {
     this._columns = columns
     return this
   }
 
   // where method sets the WHERE clause based on the provided condition and parameters
-  where(where: string, ...params: any[]) {
+  where(where: string, ...params: any[]): QueryBuilder {
     this._where = where
     this.params = params
     return this
   }
 
   // orderBy method sets the ORDER BY clause
-  orderBy(orderBy: string) {
+  orderBy(orderBy: string): QueryBuilder {
     this._orderBy = orderBy
     return this
   }
 
   // limit method sets the LIMIT clause
-  limit(limit: number) {
+  limit(limit: number): QueryBuilder {
     this._limit = limit
     return this
   }
 
   // offset method sets the OFFSET clause
-  offset(offset: number) {
+  offset(offset: number): QueryBuilder {
     this._offset = offset
     return this
   }
 
   // build method builds the SQL query based on the builder current state
-  build() {
+  build(): QueryExecutor {
     let query = `SELECT ${this._columns} FROM ${this.table}`
     if (this._where) {
       query += ` WHERE ${this._where}`
@@ -84,26 +84,28 @@ class QueryExecutor {
   }
 
   // all method exposes the all method of the SQLite Database object as a promise
-  async all<T>() {
-    return this.promiseOf(this.query, 'all', this.params)
-      .then((rows: unknown) => <T[]>rows)
+  async all<T>(): Promise<T[]> {
+    return this.promiseOf(this.query, 'all', this.params).then(
+      (rows: any[]) => objectToCamelCase(rows)
+    ) as Promise<T[]>;
   }
 
   // get method exposes the get method of the SQLite Database object as a promise
-  async get<T>() {
-    return this.promiseOf(this.query, 'get', this.params)
-      .then((row: unknown) => <T>row)
+  async get<T>(): Promise<T> {
+    return this.promiseOf(this.query, 'get', this.params).then(
+      (row: any) => objectToCamelCase(row)
+    ) as Promise<T>;
   }
 
   // promiseOf method is a helper method to wrap the callback-based SQLite methods into promises
-  private promiseOf(sql: string, method: string, params: any[]) {
+  private promiseOf(sql: string, method: string, params: any[]): Promise<any> {
     return new Promise((resolve, reject) => {
       // It access progragmatically to the Database method using the method name
-      (<any>this.db)[method](sql, params, (err: Error, rows: any) => {
+      (this.db as any)[method](sql, params, (err: Error, rows: any) => {
         if (err) {
-          reject(err)
+          reject(err);
         } else {
-          resolve(rows)
+          resolve(rows);
         }
       })
     })
@@ -118,15 +120,16 @@ export class SqliteDb {
     this.db = new Database(dbConnString)
   }
 
-  getDb() {
+  getDb(): Database {
     return this.db
   }
 
-  query(tableName: string) {
+  query(tableName: string): QueryBuilder {
     return new QueryBuilder(this.db, tableName)
   }
 
-  insert(tableName: string, data: any) {
+  insert(tableName: string, data: any): Promise<number | string> {
+    data = objectToSnakeCase(data);
     const params = Object.values(data);
     const statement = `INSERT INTO ${tableName} (${Object.keys(data).join(', ')}) VALUES (${params.map(() => '?').join(', ')})`
     
@@ -138,25 +141,26 @@ export class SqliteDb {
     });
   }
 
-  update(id: number, tableName: string, data: any) {
+  update(id: number | string, tableName: string, data: any) {
+    data = objectToSnakeCase(data);
     const params = Object.values(data).concat(id);
     const statement = `UPDATE ${tableName} SET ${Object.keys(data).map(key => `${key} = ?`).join(', ')} WHERE id = ?`
     
-    return new Promise((resolve, reject) => {
+    return new Promise<void>((resolve, reject) => {
       this.db.run(statement, params, (err: Error) => {
         if (err) reject(err);
-        resolve(id);
+        resolve();
       });
     });
   }
 
-  delete(id: number, tableName: string) {
+  delete(id: number | string, tableName: string) {
     const statement = `DELETE FROM ${tableName} WHERE id = ?`
-    
-    return new Promise<number>((resolve, reject) => {
+
+    return new Promise<void>((resolve, reject) => {
       this.db.run(statement, [id], (err: Error) => {
         if (err) reject(err);
-        resolve(id);
+        resolve();
       });
     });
   }

@@ -5,7 +5,7 @@ import { iif, of, pipe, switchMap, tap } from 'rxjs';
 
 import { NzNotificationService } from 'ng-zorro-antd/notification';
 
-import { ProductEntity } from '@pos/models';
+import { ProductEntity, SaleDTO, SaleItemEntity } from '@pos/models';
 import { ApiService } from '../api';
 
 export type LineItem = {
@@ -227,8 +227,17 @@ export const SalesStore = signalStore(
 
       async checkout(paymentAmount: number) {
         try {
+          const saleDTO: Partial<SaleDTO> = {
+            items: store.currentSale().ticket.map(ticketItem => ({
+              itemId: ticketItem.product.id,
+              quantity: ticketItem.quantity,
+            } as SaleItemEntity)),
+            paymentAmount,
+            customerName: 'Público en general',
+            paymentMethod: 'Efectivo'
+          };
           // Perform the checkout operation
-          await api.checkout(store.currentSale().ticket, paymentAmount, 'Público en general', 'Efectivo');
+          await api.checkout(saleDTO);
           
           // Close the checkout modal
           this.setShowCheckoutModal(false);

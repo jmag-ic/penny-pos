@@ -74,7 +74,7 @@ export type SortOrder = string | null;
 
 interface ICrudTableService<T, D> {
   create: (item: T) => Promise<T>;
-  delete: (item: T) => Promise<void>;
+  delete: (item: T) => Promise<T>;
   getFormValue: (item: T, form: FormGroup) => D;
   load: (pageParams: PageParams) => Observable<Page<T>>;
   update: (item: T) => Promise<T>;

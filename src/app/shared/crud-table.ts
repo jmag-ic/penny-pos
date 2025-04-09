@@ -66,7 +66,8 @@ export type Column<T> = {
             (click)="store.setSelectedItem(item)"
           >
             @for(column of columns(); let j = $index; track j) {
-              <td>{{ column.format ? column.format(item[column.key]) : item[column.key] }}</td>
+              @let value = getColumnValue(item, column);
+              <td>{{ column.format ? column.format(value) : value }}</td>
             }
             <!-- Actions column -->
             <td nzRight>
@@ -128,6 +129,17 @@ export class PosCrudTable<T extends Record<string, any>> implements OnInit {
       nzOnOk: () => this.store.delete(item),
       nzCancelText: 'No'
     });
+  }
+
+  protected getColumnValue(item: T, column: Column<T>): any {
+    let value = item;
+    
+    const keys = column.key.toString().split('.');
+    for (const key of keys) {
+      value = value[key];
+    }
+
+    return value;
   }
 }
 

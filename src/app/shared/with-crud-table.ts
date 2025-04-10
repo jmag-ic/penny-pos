@@ -2,7 +2,7 @@ import { computed, inject, InjectionToken, ProviderToken } from "@angular/core";
 import { FormGroup } from "@angular/forms";
 import { rxMethod } from "@ngrx/signals/rxjs-interop";
 import { signalStoreFeature, withState, withMethods, patchState, withComputed } from "@ngrx/signals";
-import { Observable, pipe, tap, map, switchMap } from "rxjs";
+import { Observable, pipe, tap, map, switchMap, catchError, of } from "rxjs";
 
 import { NzNotificationService } from "ng-zorro-antd/notification";
 
@@ -137,7 +137,14 @@ export const withCrudTable = <T, D>(
                 offset
             }}),
             // Load the page
-            switchMap((pageParams) => crudService.load(pageParams)),
+            switchMap((pageParams) => crudService.load(pageParams).pipe(
+              // Handle errors
+              catchError((error: Error) => {
+                console.error('Error loading data:', error);
+                notification.error('Error al cargar datos', `${error.message}`, { nzDuration: 0 });
+                return of({ items: [], total: 0 });
+              })
+            )),
             // Update the store
             tap((page) => patchState(store, { 
               items: page.items,
@@ -145,6 +152,7 @@ export const withCrudTable = <T, D>(
               loadingTable: false,
               // selectedItem: store.selectedItem() ? page.items.find(item => JSON.stringify(item) === JSON.stringify(store.selectedItem())) : null
             })),
+            
           )
         ),
         setSearchText(searchText: string) {

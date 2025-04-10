@@ -3,6 +3,7 @@ import { ActiveDescendantKeyManager } from "@angular/cdk/a11y";
 import { Subscription } from "rxjs";
 
 import { NzButtonModule } from "ng-zorro-antd/button";
+import { NzEmptyModule } from "ng-zorro-antd/empty";
 import { NzIconModule } from "ng-zorro-antd/icon";
 import { NzInputModule } from "ng-zorro-antd/input";
 import { NzListModule } from "ng-zorro-antd/list";
@@ -20,6 +21,7 @@ import { SalesStore } from "./cash-register-store";
   selector: "pos-product-finder",
   imports: [
     NzButtonModule,
+    NzEmptyModule,
     NzIconModule,
     NzInputModule,
     NzListModule,
@@ -55,6 +57,9 @@ import { SalesStore } from "./cash-register-store";
           <nz-spin nzSimple></nz-spin>
         </div>
       }
+      @else if (store.isEmptySearchResult()) {
+        <nz-empty [style.padding]="'1rem'" [nzNotFoundContent]="store.emptySearchText()"></nz-empty>
+      }
       @else {
         @for (product of store.currentSale().products; track product.id; let idx = $index) {
           <pos-product-item
@@ -62,6 +67,7 @@ import { SalesStore } from "./cash-register-store";
             (mousemove)="handleMouseMoveOnProductItem(idx)"
             (click)="handleClickOnProductItem(product)"/>
         }
+        
       }
     </nz-list>
   `,

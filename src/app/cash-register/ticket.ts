@@ -21,22 +21,19 @@ import { SalesStore } from "./cash-register-store";
           </tr>
         </thead>
         <tbody>
-          @if(store.currentSale().ticket.length === 0){
-            <nz-list-empty />
-          }
           @for(lineItem of store.currentSale().ticket; track lineItem.product.id) {
             <tr>
               <td>
                 <nz-icon class="delete-icon" nzType="delete" nzTheme="outline" (click)="store.removeLineItem(lineItem.product)"/>
               </td>
               <td class="full-w">{{ lineItem.product.name }}</td>
-              <td>\${{ lineItem.price/100 | number:'1.2-2' }}</td>
+              <td>\${{ lineItem.price | number:'1.2-2' }}</td>
               <td class="quantity">
                 <!-- <div class="quantity"> -->
                   <span class="mr-1">x</span><nz-input-number [ngModel]="lineItem.quantity" (ngModelChange)="store.updateLineItem(lineItem.product, $event)" />
                 <!-- </div> -->
               </td>
-              <td class="border-l">\${{ lineItem.total/100 | number:'1.2-2' }}</td>
+              <td class="border-l">\${{ lineItem.total | number:'1.2-2' }}</td>
             </tr>
           }
         </tbody>
@@ -45,7 +42,7 @@ import { SalesStore } from "./cash-register-store";
     
     <!-- Total -->
     <div class="total text-lg font-bold p-3">
-      <span>Total</span><span>\${{ store.total()/100 | number:'1.2-2' }}</span>
+      <span>Total</span><span>\${{ store.total() | number:'1.2-2' }}</span>
     </div>
 
     <!-- Checkout -->

@@ -136,6 +136,9 @@ export class PosCrudTable<T extends Record<string, any>> implements OnInit {
     
     const keys = column.key.toString().split('.');
     for (const key of keys) {
+      if (!value) {
+        return '';
+      }
       value = value[key];
     }
 

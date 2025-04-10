@@ -16,8 +16,8 @@ export class InventoryService {
         ...page,
         items: page.items.map(item => ({
           ...item,
-          price: item.price / 100,
-          cost: item.cost / 100
+          price: item.price,
+          cost: item.cost
         }))
       }))
     )
@@ -41,8 +41,8 @@ export class InventoryService {
       formValue.id = product.id;
     }
 
-    formValue.price = formValue.price > -1 ? +formValue.price*100 : 0;
-    formValue.cost = formValue.cost > -1 ? +formValue.cost*100 : 0;
+    formValue.price = formValue.price > -1 ? +formValue.price : 0;
+    formValue.cost = formValue.cost > -1 ? +formValue.cost : 0;
     
     return formValue as ProductEntity;
   }

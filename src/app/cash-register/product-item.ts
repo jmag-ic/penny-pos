@@ -21,7 +21,7 @@ import { SalesStore } from "./cash-register-store";
         <nz-tag class="price" nzColor="green">
           <div class="tag-content">
             <span nz-icon nzType="dollar" style="margin-right:2px;"></span>
-            <span>{{ product.price/100 | number:'1.2-2' }}</span>
+            <span>{{ product.price | number:'1.2-2' }}</span>
           </div>
         </nz-tag>
         <nz-tag class="stock" [nzColor]="getStockColor(product.stock)">

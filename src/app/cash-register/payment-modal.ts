@@ -20,13 +20,13 @@ import { SalesStore } from "./cash-register-store";
       (nzOnOk)="store.checkout(this.paymentAmount())"
       [nzOkText]="'Aceptar'"
       [nzCancelText]="'Cancelar'"
-      [nzOkDisabled]="paymentAmount() < store.total()/100"
+      [nzOkDisabled]="paymentAmount() < store.total()"
       (nzAfterOpen)="focusInput()"
     >
       <ng-container *nzModalContent>
         <div class= "payment-item text-lg">
           <span>Total: </span>
-          <span>\${{ store.total()/100 | number:'1.2-2' }}</span>
+          <span>\${{ store.total() | number:'1.2-2' }}</span>
         </div>
         <div class="payment-item">
           <span class="text-lg" style="width: 400px;">Cantidad recibida:</span>
@@ -43,7 +43,7 @@ import { SalesStore } from "./cash-register-store";
         </div>
         <div class="payment-item text-lg font-bold">
           <span>Cambio: </span>
-          <span>\${{ (paymentAmount() > store.total()/100 ? (paymentAmount() - store.total()/100) : 0) | number:'1.2-2' }}</span>
+          <span>\${{ (paymentAmount() > store.total() ? (paymentAmount() - store.total()) : 0) | number:'1.2-2' }}</span>
         </div>
         
       </ng-container>
@@ -68,7 +68,7 @@ export class PaymentModal {
   @ViewChild('paymentInput') paymentInput!: ElementRef;
 
   protected focusInput() {
-    this.paymentAmount.set(this.store.total()/100);
+    this.paymentAmount.set(this.store.total());
 
     setTimeout(() => {
       this.paymentInput.nativeElement.focus();
@@ -87,6 +87,6 @@ export class PaymentModal {
   }
 
   protected onPaymentAmountEnter() {
-    this.store.checkout(this.paymentAmount() * 100);
+    this.store.checkout(this.paymentAmount());
   }
 } 

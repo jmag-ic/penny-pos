@@ -5,7 +5,7 @@ import { ProductEntity, CatalogEntity } from "../models";
 
 export class ProductRepository extends Repository<ProductEntity> {
   constructor(conn: SqliteDb) {
-    super(conn, { table: 'item', idColumn: 'id' });
+    super(conn, { table: 'product', idColumn: 'id' });
   }
 }
 

@@ -1,7 +1,7 @@
 import { computed, inject } from '@angular/core';
 import { patchState, signalStore, withComputed, withMethods, withState } from '@ngrx/signals';
 import { rxMethod } from '@ngrx/signals/rxjs-interop';
-import { iif, of, pipe, switchMap, tap } from 'rxjs';
+import { catchError, iif, of, pipe, switchMap, tap } from 'rxjs';
 
 import { NzNotificationService } from 'ng-zorro-antd/notification';
 
@@ -50,31 +50,35 @@ export const SalesStore = signalStore(
 
   withState(initialState),
 
-  withComputed((store) => ({
-    // The currently selected sale
-    currentSale: computed(() => {
-      const idx = store.currentIdx();
-      return store.sales()[idx];
-    }),
+  withComputed((store) => {
 
-    // Convenience: total amount of the currently selected sale
-    total: computed(() => {
-      const sale = store.sales()[store.currentIdx()];
-      return sale.ticket.reduce((sum, lineItem) => sum + lineItem.total, 0);
-    }),
+    // The currently selected sale. Defined here to be reused in computed properties.
+    const currentSale = computed(() => store.sales()[store.currentIdx()]);
 
-    // Convenience: search words derived from the selected sale's searchText
-    searchWords: computed(() => {
-      const sale = store.sales()[store.currentIdx()];
-      return sale.searchText
+    return {
+      currentSale,
+
+      isEmptySearchResult: computed(() => currentSale().products.length === 0),
+
+      // Convenience: total amount of the currently selected sale
+      // Hacked to avoid floating point precision issues
+      total: computed(() => currentSale()
+        .ticket
+        .reduce((sum, lineItem) => sum + lineItem.total * 100, 0) / 100),
+
+      // Convenience: search words derived from the selected sale's searchText
+      searchWords: computed(() => currentSale().searchText
         .split(' ')
         .map((word) => word.trim())
-        .filter((word) => word.length > 0);
-    }),
+        .filter((word) => word.length > 0)),
 
-    // The last valid index of the sales array
-    lastIdx: computed(() => store.sales().length - 1)
-  })),
+      // The last valid index of the sales array
+      lastIdx: computed(() => store.sales().length - 1),
+
+      // EmptySearchText
+      emptySearchText: computed(() => currentSale().searchText.length === 0 ? 'Busca un producto' : 'Sin resultados'),
+    };
+  }),
 
   // Methods that mutate the store state
   withMethods((store, api = inject(ApiService), notification = inject(NzNotificationService)) => {
@@ -105,7 +109,8 @@ export const SalesStore = signalStore(
           ? {
               ...lineItem,
               quantity,
-              total: quantity * lineItem.price,
+              // Hacked to avoid floating point precision issues
+              total: (lineItem.price * 100 * quantity) / 100,
             }
           : lineItem
       );
@@ -278,10 +283,13 @@ export const SalesStore = signalStore(
           switchMap(searchText => iif(
             () => !!searchText,
             // If the search text is not empty, fetch the products from the API
-            api.searchProducts({
-              text: searchText,
-              orderBy: 'name'
-            }),
+            api.searchProducts({ text: searchText, orderBy: 'name' }).pipe(
+              catchError((error: Error) => {
+                console.error('Error searching products:', error);
+                notification.error('Error al buscar productos', `${error.message}`, { nzDuration: 0 });
+                return of({items: [], total: 0});
+              })
+            ),
             // If the search text is empty, return an empty page
             of({items: [], total: 0}),
           )),

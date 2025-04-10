@@ -9,7 +9,7 @@ export class Formatter {
 
   currency(value: any) {
     if (typeof value === 'number') {
-      return this.decimalPipe.transform(value / 100, '1.2-2');
+      return this.decimalPipe.transform(value, '1.2-2');
     }
     return value;
   }

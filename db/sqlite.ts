@@ -5,6 +5,7 @@ import { QueryBuilder } from './query';
 // SqliteDb is a wrapper class around the SQLite Database object
 export class SqliteDb {
   private db: Database;
+  private inTransaction: boolean = false;
 
   constructor(dbConnString: string) {
     this.db = new Database(dbConnString)
@@ -57,14 +58,22 @@ export class SqliteDb {
 
 
   tx<T>(callback: () => Promise<T>): Promise<T> {
+    // Prevent nested transactions errors
+    if (this.inTransaction) {
+      return callback();
+    }
+
     return new Promise((resolve, reject) => {
       this.db.serialize(() => {
         this.db.run("BEGIN TRANSACTION");
+        this.inTransaction = true;
         callback().then((result: T) => {
           this.db.run("COMMIT");
+          this.inTransaction = false;
           resolve(result);
         }).catch((err: Error) => {
           this.db.run("ROLLBACK");
+          this.inTransaction = false;
           reject(err);
         });
       });

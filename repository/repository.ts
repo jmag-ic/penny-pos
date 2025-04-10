@@ -15,25 +15,19 @@ export abstract class Repository<T> {
   }
 
   async create(data: Partial<T>): Promise<T> {
-    // return this.conn.transaction(async () => {
     const id = await this.conn.insert(this.metadata.table, data);
     return this.getById(id);
-    // });
   }
 
-  update(id: number | string, data: Partial<T>): Promise<T> {
-    return this.conn.transaction(async () => {
-      await this.conn.update(id, this.metadata.table, data);
-      return this.getById(id);
-    });
+  async update(id: number | string, data: Partial<T>): Promise<T> {
+    await this.conn.update(id, this.metadata.table, data);
+    return this.getById(id);
   }
 
-  delete(id: number | string): Promise<T> {
-    return this.conn.transaction(async () => {
-      const data = await this.getById(id);
-      await this.conn.delete(id, this.metadata.table);
-      return data;
-    });
+  async delete(id: number | string): Promise<T> {
+    const data = await this.getById(id);
+    await this.conn.delete(id, this.metadata.table);
+    return data;
   }
 
   getAll(orderBy?: string): Promise<T[]> {
@@ -61,6 +55,11 @@ export abstract class Repository<T> {
       .all();
   }
 
+  async getBulkMap(ids: (string | number)[]): Promise<Map<string | number, T>> {
+    const entities = await this.getBulk(ids);
+    return new Map(entities.map(entity => [this.getId(entity), entity]));
+  }
+
   async loadRelated<R, D>(repository: Repository<R>, entities: T[], foreignKey: keyof T, relatedKey: keyof D): Promise<D[]> {
     const relationMap = await this.getRelated(repository, entities, foreignKey);
     return entities.map(entity => {
@@ -78,11 +77,10 @@ export abstract class Repository<T> {
     
     if (ids.length === 0) return new Map();
     
-    const relatedItems = await repository.getBulk(ids);
-    return new Map(relatedItems.map(item => [repository.getId(item), item]));
+    return await repository.getBulkMap(ids);
   }
 
-  pagedSearch(pageParams: PageParams, searchColumns: string[] = [], fts: boolean = false): Promise<Page<T>> {
+  async pagedSearch(pageParams: PageParams, searchColumns: string[] = [], fts: boolean = false): Promise<Page<T>> {
     const itemsQuery = this.conn.query(this.metadata.table);
     const totalQuery = this.conn.query(this.metadata.table).columns('COUNT(*) total')
 
@@ -111,9 +109,9 @@ export abstract class Repository<T> {
       itemsQuery.offset(pageParams.offset)
     }
 
-    return this.conn.transaction(async () => ({
+    return {
       items: await itemsQuery.build().all<T>(),
       total: (await totalQuery.build().get<{ total: number }>()).total
-    }))
+    }
   }
 }

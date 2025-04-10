@@ -4,7 +4,8 @@
     "rootDir": "./",
     "module": "commonjs",
     "target": "es2020",
-    "noEmitOnError": false
+    "noEmitOnError": false,
+    "experimentalDecorators": true,
   },
   "include": [
     "electron/*.ts"

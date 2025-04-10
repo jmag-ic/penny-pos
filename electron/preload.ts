@@ -7,17 +7,17 @@ import { IAPI } from "./api";
 
 const api: IAPI = {
   createItem: (item: ProductEntity) => {
-    return ipcRenderer.invoke('createItem', {item});
+    return ipcRenderer.invoke('createItem', item);
   },
   updateItem: (item: ProductEntity) => {
-    return ipcRenderer.invoke('updateItem', {item});
+    return ipcRenderer.invoke('updateItem', item);
   },
-  deleteItem: (id: number) => {
-    return ipcRenderer.invoke('deleteItem', {id});
+  deleteItem: (id: number) => { 
+    return ipcRenderer.invoke('deleteItem', id);
   },
   
   searchItems: (pageParams: PageParams) => {
-    return ipcRenderer.invoke('searchItems', { pageParams });
+    return ipcRenderer.invoke('searchItems', pageParams);
   },
   
   checkout: (saleDTO: Partial<SaleDTO>) => {

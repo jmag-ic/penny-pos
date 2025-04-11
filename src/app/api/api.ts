@@ -1,5 +1,5 @@
 import { Injectable } from "@angular/core";
-import { IAPI } from "@pos/electron/api";
+import { IAPI } from "@pos/api";
 import { PageParams, ProductEntity, Page, ProductDTO, SaleDTO } from "@pos/models";
 import { from, Observable } from "rxjs";
 
@@ -15,19 +15,19 @@ export class ApiService {
   }
 
   searchProducts(pageParams: PageParams): Observable<Page<ProductDTO>> {
-    return from(api.searchItems(pageParams));
+    return from(api.searchProducts(pageParams));
   }
 
   createProduct(product: ProductEntity) {    
-    return api.createItem(product);
+    return api.createProduct(product);
   }
 
   updateProduct(product: ProductEntity) {
-    return api.updateItem(product);
+    return api.updateProduct(product);
   }
 
-  deleteProduct(product: ProductEntity) {
-    return api.deleteItem(product.id);
+  deleteProduct(id: number) {
+    return api.deleteProduct(id);
   }
 
   getCategories() {

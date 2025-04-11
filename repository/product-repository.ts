@@ -1,5 +1,5 @@
 
-import { SqliteDb } from "../db/sqlite";
+import { SqliteDb } from "../db";
 import { Repository } from "./repository";
 import { ProductEntity, CatalogEntity } from "../models";
 

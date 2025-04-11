@@ -1,4 +1,4 @@
-import { SqliteDb, utils } from "../db/sqlite";
+import { SqliteDb, Transactional, utils } from "../db";
 import { PageParams, Page } from "../models";
 
 type RepositoryMetadata<T> = {
@@ -14,16 +14,19 @@ export abstract class Repository<T> {
     return entity[this.metadata.idColumn] as number | string;
   }
 
+  @Transactional()
   async create(data: Partial<T>): Promise<T> {
     const id = await this.conn.insert(this.metadata.table, data);
     return this.getById(id);
   }
 
+  @Transactional()
   async update(id: number | string, data: Partial<T>): Promise<T> {
     await this.conn.update(id, this.metadata.table, data);
     return this.getById(id);
   }
 
+  @Transactional()
   async delete(id: number | string): Promise<T> {
     const data = await this.getById(id);
     await this.conn.delete(id, this.metadata.table);
@@ -80,6 +83,7 @@ export abstract class Repository<T> {
     return await repository.getBulkMap(ids);
   }
 
+  @Transactional()
   async pagedSearch(pageParams: PageParams, searchColumns: string[] = [], fts: boolean = false): Promise<Page<T>> {
     const itemsQuery = this.conn.query(this.metadata.table);
     const totalQuery = this.conn.query(this.metadata.table).columns('COUNT(*) total')

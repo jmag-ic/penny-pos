@@ -1,8 +1,7 @@
 import { ipcMain } from "electron";
-import { DatabaseManager } from "../db/manager";
+import { DatabaseManager, Transactional } from "../db";
 import { ProductEntity, PageParams, SaleDTO } from "../models";
 import { ProductRepository, CategoryRepository, SaleRepository, SaleItemRepository } from "../repository";
-import { Transactional } from "./decorators";
 
 // Create repository instances using the singleton database connection
 const db = DatabaseManager.getInstance();
@@ -12,9 +11,9 @@ const saleRepo = new SaleRepository(db);
 const saleItemRepo = new SaleItemRepository(db);
 
 class Handlers {
-  // Items API
+  // Products API
   @Transactional()
-  async searchItems(pageParams: PageParams) {
+  async searchProducts(pageParams: PageParams) {
     const productsPage = await productRepo.pagedSearch(pageParams, ['name', 'description'], true);
     const productsData = await productRepo.loadRelated(categoryRepo, productsPage.items, 'categoryId', 'category');
     
@@ -22,6 +21,21 @@ class Handlers {
       ...productsPage,
       items: productsData
     };
+  }
+
+  @Transactional()
+  async createProduct(product: ProductEntity) {
+    return productRepo.create(product);
+  }
+
+  @Transactional()
+  async updateProduct(product: ProductEntity) {
+    return productRepo.update(product.id, product);
+  }
+
+  @Transactional()
+  async deleteProduct(id: number) {
+    return productRepo.delete(id);
   }
 
   // Sales API
@@ -62,22 +76,6 @@ class Handlers {
     };
   }
 
-  // Items API
-  @Transactional()
-  async createItem(item: ProductEntity) {
-    return productRepo.create(item);
-  }
-
-  @Transactional()
-  async updateItem(item: ProductEntity) {
-    return productRepo.update(item.id, item);
-  }
-
-  @Transactional()
-  async deleteItem(id: number) {
-    return productRepo.delete(id);
-  }
-
   // Catalogs API
   @Transactional()
   async getCategories() {
@@ -88,10 +86,15 @@ class Handlers {
 const handlers = new Handlers();
 export const loadHandlers = () => {
   // Register IPC handlers
-  ipcMain.handle('searchItems', (_, params: PageParams) =>  handlers.searchItems(params));
+  // Products API
+  ipcMain.handle('searchProducts', (_, params: PageParams) =>  handlers.searchProducts(params));
+  ipcMain.handle('createProduct', (_, params: ProductEntity) => handlers.createProduct(params));
+  ipcMain.handle('updateProduct', (_, params: ProductEntity) => handlers.updateProduct(params));
+  ipcMain.handle('deleteProduct', (_, id: number) => handlers.deleteProduct(id));
+
+  // Sales API
   ipcMain.handle('checkout', (_, params: SaleDTO) => handlers.checkout(params));
-  ipcMain.handle('createItem', (_, params: ProductEntity) => handlers.createItem(params));
-  ipcMain.handle('updateItem', (_, params: ProductEntity) => handlers.updateItem(params));
-  ipcMain.handle('deleteItem', (_, id: number) => handlers.deleteItem(id));
+
+  // Catalogs API
   ipcMain.handle('getCategories', () => handlers.getCategories());
 };

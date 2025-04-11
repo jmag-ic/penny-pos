@@ -1,4 +1,4 @@
-import { DatabaseManager } from "../db/manager";
+import { DatabaseManager } from "./manager";
 
 /**
  * Decorator that wraps a method with a database transaction

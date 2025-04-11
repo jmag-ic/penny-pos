@@ -32,7 +32,7 @@ export class InventoryService {
   }
 
   delete(product: ProductDTO): Promise<ProductDTO> {
-    return this.api.deleteProduct(product);
+    return this.api.deleteProduct(product.id);
   }
 
   getFormValue(product: ProductDTO, form: FormGroup): ProductEntity {

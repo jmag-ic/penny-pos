@@ -141,8 +141,8 @@ export class PosCrudTable<T extends Record<string, any>> implements OnInit {
       }
       value = value[key];
     }
-
-    return value;
+    
+    return column.format ? column.format(value) : value;
   }
 }
 

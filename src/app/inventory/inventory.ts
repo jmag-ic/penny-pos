@@ -1,5 +1,4 @@
 import { Component, HostListener, inject, OnInit, ViewChild, ElementRef, computed } from "@angular/core";
-import { DecimalPipe } from "@angular/common";
 import { Validators } from "@angular/forms";
 
 import { NzButtonModule } from "ng-zorro-antd/button";
@@ -12,7 +11,7 @@ import { Formatter } from "../shared/formatter";
 import { InputCleaner } from "../shared/input-cleaner";
 import { InputDebouncer } from "../shared/input-debouncer";
 import { PosCrudModalForm } from "../shared/crud-modal-form";
-import { PosCrudTable } from "../shared/crud-table";
+import { Column, PosCrudTable } from "../shared/crud-table";
 import { CRUD_TABLE_STORE } from "../shared/with-crud-table";
 
 import { InventoryStore } from "./inventory-store";
@@ -88,8 +87,6 @@ import { ProductDTO } from "@pos/models";
     <pos-form-modal [config]="formConfig()" />
   `,
   providers: [
-    Formatter, 
-    DecimalPipe,
     { provide: CRUD_TABLE_STORE, useExisting: InventoryStore },
   ],
 })
@@ -123,9 +120,9 @@ export class Inventory extends CtrlCommander implements OnInit {
     { key: 'name', label: 'Nombre', width: '300px' },
     { key: 'category.name', label: 'Categoría', width: '120px' },
     { key: 'stock', label: 'Stock', width: '90px' },
-    { key: 'price', label: 'Precio', width: '120px' },
-    { key: 'cost', label: 'Costo', width: '120px' },
-  ]);
+    { key: 'price', label: 'Precio', width: '120px', format: (v) => this.formatter.currency(v) },
+    { key: 'cost', label: 'Costo', width: '120px', format: (v) => this.formatter.currency(v) },
+  ] as Column<ProductDTO>[]);
 
   metadata = computed(() => ({
     elementName: 'producto',

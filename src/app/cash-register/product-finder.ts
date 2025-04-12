@@ -99,12 +99,13 @@ export class ProductFinder implements AfterViewInit, OnDestroy {
   // Key manager
   private keyManager!: ActiveDescendantKeyManager<ProductItem>; 
   private queryListSub!: Subscription;
+  private selectedProductSub!: Subscription;
 
   ngAfterViewInit() {
     // (Re)Initialize key manager on query list change
-    this.queryListSub = this.queryListItems.changes.subscribe((listItems: QueryList<ProductItem>) => {
-      this.keyManager = new ActiveDescendantKeyManager(listItems).withWrap();
-      setTimeout(() => this.keyManager.setFirstItemActive(), 0);
+    this.initializeKeyManager(this.store.currentSale().selectedProductIdx);
+    this.queryListSub = this.queryListItems.changes.subscribe(() => {
+      this.initializeKeyManager(this.store.currentSale().selectedProductIdx);
     });
   }
 
@@ -151,5 +152,12 @@ export class ProductFinder implements AfterViewInit, OnDestroy {
     if (this.keyManager && this.keyManager.activeItemIndex !== index) {
       this.keyManager.setActiveItem(index);
     }
+  }
+
+  private initializeKeyManager(selectedIdx: number = 0) {
+    this.keyManager = new ActiveDescendantKeyManager(this.queryListItems).withWrap();
+    this.selectedProductSub?.unsubscribe();
+    this.selectedProductSub = this.keyManager.change.subscribe(index => this.store.setSelectedProductIdx(index));
+    setTimeout(() => this.keyManager.setActiveItem(selectedIdx), 0);
   }
 }

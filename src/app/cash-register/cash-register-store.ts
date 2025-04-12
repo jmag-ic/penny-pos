@@ -1,7 +1,7 @@
 import { computed, inject } from '@angular/core';
 import { patchState, signalStore, withComputed, withMethods, withState } from '@ngrx/signals';
 import { rxMethod } from '@ngrx/signals/rxjs-interop';
-import { catchError, map, of, pipe, switchMap, tap } from 'rxjs';
+import { catchError, filter, map, of, pipe, switchMap, tap } from 'rxjs';
 
 import { NzNotificationService } from 'ng-zorro-antd/notification';
 
@@ -21,6 +21,7 @@ export type Sale = {
   searchText: string;
   products: ProductEntity[];
   ticket: LineItem[];
+  selectedProductIdx: number;
 };
 
 const emptySale: Sale = {
@@ -28,7 +29,8 @@ const emptySale: Sale = {
   searching: false,
   searchText: '',
   products: [],
-  ticket: []
+  ticket: [],
+  selectedProductIdx: 0
 };
 
 type Sales = {
@@ -182,6 +184,13 @@ export const SalesStore = signalStore(
         patchState(store, { currentIdx: index });
       },
 
+      setSelectedProductIdx(index: number) {
+        updateCurrentSale((sale) => ({
+          ...sale,
+          selectedProductIdx: index
+        }));
+      },
+
       setShowCheckoutModal(show: boolean) {
         // If the user tries to open the checkout modal with an empty ticket, don't do anything
         if (show && store.currentSale().ticket.length === 0) {
@@ -276,6 +285,7 @@ export const SalesStore = signalStore(
       searchProducts: rxMethod<string>(
         pipe(
           map(searchText => searchText.trim()),
+          filter(searchText => searchText !== store.currentSale().searchText),
           tap(searchText => updateCurrentSale((sale) => ({
             ...sale,
             searching: true,

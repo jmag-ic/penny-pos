@@ -1,7 +1,7 @@
 import { computed, inject } from '@angular/core';
 import { patchState, signalStore, withComputed, withMethods, withState } from '@ngrx/signals';
 import { rxMethod } from '@ngrx/signals/rxjs-interop';
-import { catchError, iif, of, pipe, switchMap, tap } from 'rxjs';
+import { catchError, map, of, pipe, switchMap, tap } from 'rxjs';
 
 import { NzNotificationService } from 'ng-zorro-antd/notification';
 
@@ -275,25 +275,24 @@ export const SalesStore = signalStore(
       
       searchProducts: rxMethod<string>(
         pipe(
+          map(searchText => searchText.trim()),
           tap(searchText => updateCurrentSale((sale) => ({
             ...sale,
             searching: true,
             searchText: searchText,
           }))),
-          switchMap(searchText => iif(
-            () => !!searchText,
-            // If the search text is not empty, fetch the products from the API
-            api.searchProducts({ text: searchText, orderBy: 'name' }).pipe(
+          switchMap(searchText => {
+            if (!searchText) {
+              return of({items: [], total: 0});
+            }
+            return api.searchProducts({ text: searchText, orderBy: 'name' }).pipe(
               catchError((error: Error) => {
                 console.error('Error searching products:', error);
                 notification.error('Error al buscar productos', `${error.message}`, { nzDuration: 0 });
                 return of({items: [], total: 0});
               })
-            ),
-            // If the search text is empty, return an empty page
-            of({items: [], total: 0}),
-          )),
-          // Update the currently selected sale with the fetched products
+            );
+          }),
           tap(page => updateCurrentSale((sale) => ({
             ...sale,
             products: page.items,

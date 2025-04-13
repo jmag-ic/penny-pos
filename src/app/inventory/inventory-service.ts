@@ -46,4 +46,8 @@ export class InventoryService {
     
     return formValue as ProductEntity;
   }
+
+  findItem(items: ProductDTO[], selectedItem: ProductDTO): ProductDTO {
+    return items.find(item => item.id === selectedItem.id) || items[0];
+  }
 } 

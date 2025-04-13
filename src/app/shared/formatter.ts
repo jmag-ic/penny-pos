@@ -8,10 +8,6 @@ export class Formatter {
 
   locale = inject(LOCALE_ID);
 
-  constructor() {
-    console.log(this.locale);
-  }
-
   currency(value: any) {
     if (typeof value === 'number') {
       return `$${formatNumber(value, this.locale, '1.2-2')}`;

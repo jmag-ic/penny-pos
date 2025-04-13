@@ -78,6 +78,7 @@ interface ICrudTableService<T, D> {
   getFormValue: (item: T, form: FormGroup) => D;
   load: (pageParams: PageParams) => Observable<Page<T>>;
   update: (item: T) => Promise<T>;
+  findItem: (items: T[], selectedItem: T) => T;
 }
 
 export const withCrudTable = <T, D>(
@@ -150,7 +151,9 @@ export const withCrudTable = <T, D>(
               items: page.items,
               total: page.total,
               loadingTable: false,
-              // selectedItem: store.selectedItem() ? page.items.find(item => JSON.stringify(item) === JSON.stringify(store.selectedItem())) : null
+              selectedItem: store.selectedItem()
+                ? crudService.findItem(page.items, store.selectedItem() as T)
+                : page.items[0]
             })),
             
           )

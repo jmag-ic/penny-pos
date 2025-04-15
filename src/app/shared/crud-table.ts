@@ -5,7 +5,7 @@ import { NzIconModule } from "ng-zorro-antd/icon";
 import { NzModalModule, NzModalService } from "ng-zorro-antd/modal";
 import { NzTableModule } from "ng-zorro-antd/table";
 
-import { ICrudTableStore, CRUD_TABLE_STORE, CrudTableMetadata } from "./with-crud-table";
+import { ICrudTableStore, CRUD_TABLE_STORE, ItemMetadata } from "./with-crud-table";
 
 export type Column<T> = {
   key: keyof T;
@@ -95,7 +95,7 @@ export class PosCrudTable<T extends Record<string, any>> implements OnInit {
   defaultPageSize = 20;
   columns = input<Column<T>[]>([]);
   scroll = input<{ x?: string | null, y?: string | null }>({ x: null, y: null });
-  metadata = input<CrudTableMetadata>();
+  metadata = input<ItemMetadata<T>>();
 
   protected store = inject<ICrudTableStore<T>>(CRUD_TABLE_STORE);
   protected modal = inject(NzModalService);

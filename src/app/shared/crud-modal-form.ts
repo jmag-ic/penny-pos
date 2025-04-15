@@ -1,4 +1,4 @@
-import { Component, computed, ElementRef, inject, InjectionToken, input, QueryList, ViewChildren, signal, effect, OnInit, output } from "@angular/core";
+import { Component, computed, ElementRef, inject, InjectionToken, input, QueryList, ViewChildren, signal, effect, OnInit, output, WritableSignal, Signal } from "@angular/core";
 import { FormBuilder, Validators } from "@angular/forms";
 import { FormsModule, ReactiveFormsModule } from "@angular/forms";
 
@@ -11,7 +11,7 @@ import { NzSelectModule } from 'ng-zorro-antd/select';
 import { NzDatePickerModule } from 'ng-zorro-antd/date-picker';
 import { NzInputNumberModule } from 'ng-zorro-antd/input-number';
 import { NzSwitchModule } from 'ng-zorro-antd/switch';
-import { ICrudTableStore, CRUD_TABLE_STORE } from "./with-crud-table";
+import { IModalFormStore, MODAL_FORM_STORE } from "./with-crud-modal-form";
 
 export type FormModalConfig = { 
   [key: string]: { 
@@ -35,7 +35,7 @@ export type FormModalConfig = {
     NzSelectModule,
     NzSpinModule,
     NzSwitchModule,
-    ReactiveFormsModule, 
+    ReactiveFormsModule,
   ],
   template: `
     <nz-modal
@@ -97,7 +97,7 @@ export type FormModalConfig = {
   `
 })
 export class PosCrudModalForm<T> {
-  protected store = inject<ICrudTableStore<T>>(CRUD_TABLE_STORE);
+  protected store = inject<IModalFormStore<T>>(MODAL_FORM_STORE);
   protected formBuilder = inject(FormBuilder);
 
   @ViewChildren('inputs') inputs!: QueryList<ElementRef<HTMLInputElement>>;
@@ -133,8 +133,8 @@ export class PosCrudModalForm<T> {
 
   afterOpen() {
     setTimeout(() => {
-      if (this.store.formEditMode() && this.store.selectedItem()) {
-        this.formGroup().patchValue(this.store.selectedItem() as any);
+      if (this.store.formEditMode() && this.store.formItem()) {
+        this.formGroup().patchValue(this.store.formItem() as any);
       }
       this.inputs.first.nativeElement.focus();
     }, 0);
@@ -159,10 +159,10 @@ export class PosCrudModalForm<T> {
       return;
     }
 
-    const formValue = this.store.getFormValue(this.store.selectedItem(), this.formGroup());
+    const formValue = this.store.getFormValue(this.formGroup());
     
     if (this.store.formEditMode()) {
-      if (this.store.selectedItem() !== formValue) {
+      if (this.store.formItem() !== formValue) {
         this.store.update(formValue);
       }
     } else {

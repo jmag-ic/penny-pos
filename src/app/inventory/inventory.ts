@@ -12,10 +12,11 @@ import { InputCleaner } from "../shared/input-cleaner";
 import { InputDebouncer } from "../shared/input-debouncer";
 import { PosCrudModalForm } from "../shared/crud-modal-form";
 import { Column, PosCrudTable } from "../shared/crud-table";
-import { CRUD_TABLE_STORE } from "../shared/with-crud-table";
+import { CRUD_TABLE_STORE, ItemMetadata } from "../shared/with-crud-table";
 
 import { InventoryStore } from "./inventory-store";
 import { ProductDTO } from "@pos/models";
+import { MODAL_FORM_STORE } from "../shared/with-crud-modal-form";
 
 @Component({
   selector: 'pos-inventory',
@@ -88,6 +89,7 @@ import { ProductDTO } from "@pos/models";
   `,
   providers: [
     { provide: CRUD_TABLE_STORE, useExisting: InventoryStore },
+    { provide: MODAL_FORM_STORE, useExisting: InventoryStore },
   ],
 })
 export class Inventory extends CtrlCommander implements OnInit {
@@ -127,8 +129,9 @@ export class Inventory extends CtrlCommander implements OnInit {
   metadata = computed(() => ({
     elementName: 'producto',
     elementGender: 'm' as const,
+    idField: 'id',
     nameField: 'name',
-  }));
+  } as ItemMetadata<ProductDTO>));
 
   constructor() {
     super({

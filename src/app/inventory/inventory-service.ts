@@ -35,9 +35,9 @@ export class InventoryService {
     return this.api.deleteProduct(product.id);
   }
 
-  getFormValue(product: ProductDTO, form: FormGroup): ProductEntity {
+  getFormValue(product: ProductDTO | null, form: FormGroup): ProductEntity {
     const formValue = form.getRawValue();
-    if (!!product && product.id) {
+    if (product !== null && product.id) {
       formValue.id = product.id;
     }
 

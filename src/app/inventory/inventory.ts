@@ -6,6 +6,8 @@ import { NzDropDownModule } from 'ng-zorro-antd/dropdown';
 import { NzIconModule } from "ng-zorro-antd/icon";
 import { NzInputModule } from "ng-zorro-antd/input";
 
+import { ProductDTO } from "@pos/models";
+
 import { CtrlCommander } from "../shared/ctrl-commander";
 import { Formatter } from "../shared/formatter";
 import { InputCleaner } from "../shared/input-cleaner";
@@ -15,7 +17,6 @@ import { Column, PosCrudTable } from "../shared/crud-table";
 import { CRUD_TABLE_STORE, ItemMetadata } from "../shared/with-crud-table";
 
 import { InventoryStore } from "./inventory-store";
-import { ProductDTO } from "@pos/models";
 import { MODAL_FORM_STORE } from "../shared/with-crud-modal-form";
 
 @Component({
@@ -97,7 +98,6 @@ export class Inventory extends CtrlCommander implements OnInit {
   @ViewChild('searchInput') searchInput!: ElementRef<HTMLInputElement>;
   @ViewChild(PosCrudTable) crudTable!: PosCrudTable<ProductDTO>;
 
-
   // Implement the handleKeyDownEvent method from the CtrlCommander class
   // to handle the keydown event
   @HostListener("document:keydown", ["$event"])
@@ -109,21 +109,69 @@ export class Inventory extends CtrlCommander implements OnInit {
   inventoryStore = inject(InventoryStore);
 
   formConfig = computed(() => ({
-    name: { label: 'Nombre', type: 'string', control: ['', Validators.required] },
-    categoryId: { label: 'Categoría', type: 'autocomplete', control: ['', Validators.required], options: this.inventoryStore.categoriesSelectOpts() },
-    description: { label: 'Descripción', type: 'text', control: '' },
-    stock: { label: 'Stock', type: 'number', control: '' },
-    price: { label: 'Precio', type: 'number', control: ['', [Validators.required, Validators.min(0)]] },
-    cost: { label: 'Costo', type: 'number', control: ['', [Validators.required, Validators.min(0)]] },
+    name: {
+      label: 'Nombre',
+      type: 'string',
+      control: ['', Validators.required],
+      alphanumeric: { case: 'uppercase' as const }
+    },
+    categoryId: {
+      label: 'Categoría',
+      type: 'autocomplete',
+      control: ['', Validators.required],
+      options: this.inventoryStore.categoriesSelectOpts(),
+      alphanumeric: { case: 'uppercase' as const }
+    },
+    description: {
+      label: 'Descripción',
+      type: 'text',
+      control: ''
+    },
+    stock: {
+      label: 'Stock',
+      type: 'number',
+      control: ''
+    },
+    price: {
+      label: 'Precio',
+      type: 'number',
+      control: ['', [Validators.required, Validators.min(0)]],
+    },
+    cost: {
+      label: 'Costo',
+      type: 'number',
+      control: ['', [Validators.required, Validators.min(0)]]
+    }
   }));
 
   columns = computed(() => [
-    { key: 'id', label: 'ID', width: '90px' },
-    { key: 'name', label: 'Nombre', width: '300px' },
-    { key: 'category.name', label: 'Categoría', width: '120px' },
-    { key: 'stock', label: 'Stock', width: '90px' },
-    { key: 'price', label: 'Precio', width: '120px', format: (v) => this.formatter.currency(v) },
-    { key: 'cost', label: 'Costo', width: '120px', format: (v) => this.formatter.currency(v) },
+    {
+      key: 'id',
+      label: 'ID',
+      width: '90px'
+    }, {
+      key: 'name',
+      label: 'Nombre',
+      width: '300px'
+    }, {
+      key: 'category.name',
+      label: 'Categoría',
+      width: '120px'
+    }, {
+      key: 'stock',
+      label: 'Stock',
+      width: '90px'
+    }, {
+      key: 'price',
+      label: 'Precio',
+      width: '120px',
+      format: (v) => this.formatter.currency(v)
+    }, {
+      key: 'cost',
+      label: 'Costo',
+      width: '120px',
+      format: (v) => this.formatter.currency(v)
+    }
   ] as Column<ProductDTO>[]);
 
   metadata = computed(() => ({

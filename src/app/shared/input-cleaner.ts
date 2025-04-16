@@ -2,7 +2,7 @@ import { Directive, ElementRef, OnDestroy } from '@angular/core';
 import { filter, fromEvent, Subscription } from 'rxjs';
 
 @Directive({
-  selector: 'input[pos-input-cleaner]'
+  selector: 'input[inputCleaner]'
 })
 export class InputCleaner implements OnDestroy {
   // The subscription to the keydown event

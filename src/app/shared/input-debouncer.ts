@@ -2,7 +2,7 @@ import { Directive, ElementRef, input, OnDestroy, output } from '@angular/core';
 import { debounce, distinctUntilChanged, fromEvent, interval, map, Subscription } from 'rxjs';
 
 @Directive({
-  selector: 'input[type=text][pos-input-debouncer]'
+  selector: 'input[inputDebouncer]'
 })
 export class InputDebouncer implements OnDestroy {
   // Inputs

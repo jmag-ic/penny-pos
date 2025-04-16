@@ -37,8 +37,8 @@ import { SalesStore } from "./cash-register-store";
         type="text"
         placeholder="Buscar producto..."
         nz-input
-        pos-input-debouncer
-        pos-input-cleaner
+        inputDebouncer
+        inputCleaner
         [value]="store.currentSale().searchText"
         (keydown)="handleKeyDownOnSearchInput($event)"
         (textChanged)="store.searchProducts($event)"

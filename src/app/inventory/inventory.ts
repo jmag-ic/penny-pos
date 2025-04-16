@@ -39,8 +39,8 @@ import { MODAL_FORM_STORE } from "../shared/with-crud-modal-form";
           type="text"
           placeholder="Buscar producto..."
           nz-input
-          pos-input-debouncer
-          pos-input-cleaner
+          inputDebouncer
+          inputCleaner
           [value]="inventoryStore.searchText()"
           (textChanged)="inventoryStore.setSearchText($event)"
         />

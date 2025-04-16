@@ -21,7 +21,7 @@ export const toCamelCase = (str: string): string => {
  * @param obj The object to convert
  * @returns A new object with snake_case keys
  */
-export const objectToSnakeCase = <T>(obj: T): T extends object ? any : T => {
+export const objectToSnakeCase = <T, D>(obj: T): D | any => {
   if (Array.isArray(obj)) {
     return obj.map(item => objectToSnakeCase(item)) as any;
   }
@@ -58,4 +58,8 @@ export const objectToCamelCase = <T>(obj: T): T extends object ? any : T => {
   }
 
   return obj as any;
+};
+
+export const toSlug = (str: string): string => {
+  return str.toLowerCase().replace(/[^a-z0-9\s-]/g, '').replace(/\s+/g, '-');
 };

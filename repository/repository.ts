@@ -1,14 +1,14 @@
 import { SqliteDb, Transactional, utils } from "../db";
 import { PageParams, Page } from "../models";
 
-type RepositoryMetadata<T> = {
+type TableMetadata<T> = {
   table: string;
   idColumn: keyof T;
 }
 
 export abstract class Repository<T> {
 
-  constructor(protected conn: SqliteDb, protected metadata: RepositoryMetadata<T>) {}
+  constructor(protected conn: SqliteDb, protected metadata: TableMetadata<T>) {}
 
   getId(entity: T): number | string {
     return entity[this.metadata.idColumn] as number | string;
@@ -16,20 +16,20 @@ export abstract class Repository<T> {
 
   @Transactional()
   async create(data: Partial<T>): Promise<T> {
-    const id = await this.conn.insert(this.metadata.table, data);
+    const id = await this.conn.insert(this.metadata.table, this.metadata.idColumn, data);
     return this.getById(id);
   }
 
   @Transactional()
   async update(id: number | string, data: Partial<T>): Promise<T> {
-    await this.conn.update(id, this.metadata.table, data);
+    await this.conn.update(id, this.metadata.table, this.metadata.idColumn, data);
     return this.getById(id);
   }
 
   @Transactional()
   async delete(id: number | string): Promise<T> {
     const data = await this.getById(id);
-    await this.conn.delete(id, this.metadata.table);
+    await this.conn.delete(id, this.metadata.table, this.metadata.idColumn);
     return data;
   }
 

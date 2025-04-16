@@ -25,11 +25,15 @@ class Handlers {
 
   @Transactional()
   async createProduct(product: ProductEntity) {
+    const category = await categoryRepo.getOrCreate(product.categoryId);
+    product.categoryId = category.id;
     return productRepo.create(product);
   }
 
   @Transactional()
   async updateProduct(product: ProductEntity) {
+    const category = await categoryRepo.getOrCreate(product.categoryId);
+    product.categoryId = category.id;
     return productRepo.update(product.id, product);
   }
 

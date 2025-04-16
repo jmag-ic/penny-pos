@@ -19,23 +19,23 @@ export class SqliteDb {
     return new QueryBuilder(this.db, tableName)
   }
 
-  insert(tableName: string, data: any): Promise<number | string> {
-    data = objectToSnakeCase(data);
-    const params = Object.values(data);
-    const statement = `INSERT INTO ${tableName} (${Object.keys(data).join(', ')}) VALUES (${params.map(() => '?').join(', ')})`
+  insert<T>(tableName: string, idColumn: keyof T, data: Partial<T>): Promise<number | string> {
+    const dataObject = objectToSnakeCase(data);
+    const params = Object.values(dataObject);
+    const statement = `INSERT INTO ${tableName} (${Object.keys(dataObject).join(', ')}) VALUES (${params.map(() => '?').join(', ')})`
     
     return new Promise((resolve, reject) => {
       this.db.run(statement, params, function(this: RunResult, err: Error) {
         if (err) reject(err);
-        resolve(this.lastID);
+        resolve((data[idColumn] as string | number) || this.lastID);
       });
     });
   }
 
-  update(id: number | string, tableName: string, data: any) {
-    data = objectToSnakeCase(data);
-    const params = Object.values(data).concat(id);
-    const statement = `UPDATE ${tableName} SET ${Object.keys(data).map(key => `${key} = ?`).join(', ')} WHERE id = ?`
+  update<T>(id: number | string, tableName: string, idColumn: keyof T, data: Partial<T>) {
+    const dataObject = objectToSnakeCase(data);
+    const params = Object.values(dataObject).concat(id);
+    const statement = `UPDATE ${tableName} SET ${Object.keys(dataObject).map(key => `${key} = ?`).join(', ')} WHERE ${idColumn.toString()} = ?`
     
     return new Promise<void>((resolve, reject) => {
       this.db.run(statement, params, (err: Error) => {
@@ -45,8 +45,8 @@ export class SqliteDb {
     });
   }
 
-  delete(id: number | string, tableName: string) {
-    const statement = `DELETE FROM ${tableName} WHERE id = ?`
+  delete<T>(id: number | string, tableName: string, idColumn: keyof T) {
+    const statement = `DELETE FROM ${tableName} WHERE ${idColumn.toString()} = ?`
 
     return new Promise<void>((resolve, reject) => {
       this.db.run(statement, [id], (err: Error) => {

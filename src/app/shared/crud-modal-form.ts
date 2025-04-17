@@ -1,4 +1,4 @@
-import { Component, computed, ElementRef, inject, input, QueryList, ViewChildren, output } from "@angular/core";
+import { Component, computed, ElementRef, inject, input, QueryList, ViewChildren, output, signal } from "@angular/core";
 import { FormBuilder, Validators } from "@angular/forms";
 import { FormsModule, ReactiveFormsModule } from "@angular/forms";
 
@@ -11,8 +11,17 @@ import { NzSelectModule } from 'ng-zorro-antd/select';
 import { NzDatePickerModule } from 'ng-zorro-antd/date-picker';
 import { NzInputNumberModule } from 'ng-zorro-antd/input-number';
 import { NzSwitchModule } from 'ng-zorro-antd/switch';
+
+import { ValdemortModule } from 'ngx-valdemort';
+
 import { IModalFormStore, MODAL_FORM_STORE } from "./with-crud-modal-form";
 import { CaseTransform, InputAlphanumericDirective } from "./input-alphanumeric";
+import { FormItem } from "./form-item";
+
+export type ControlOption = {
+  label: string,
+  value: any,
+}
 
 export type FormModalConfig = {
   [key: string]: {
@@ -23,7 +32,7 @@ export type FormModalConfig = {
     alphanumeric?: {
       case?: CaseTransform,
     },
-    options?: { label: string, value: any }[],
+    options?: ControlOption[],
     type: string | 'text' | 'number' | 'select' | 'date' | 'switch' | 'autocomplete',
   } 
 }
@@ -31,18 +40,20 @@ export type FormModalConfig = {
 @Component({
   selector: 'pos-form-modal',
   imports: [
-    FormsModule, 
+    FormsModule,
+    ReactiveFormsModule,
     NzAutocompleteModule,
     NzDatePickerModule,
-    NzFormModule, 
-    NzInputModule, 
+    NzFormModule,
+    NzInputModule,
     NzInputNumberModule,
-    NzModalModule, 
+    NzModalModule,
     NzSelectModule,
     NzSpinModule,
     NzSwitchModule,
-    ReactiveFormsModule,
-    InputAlphanumericDirective
+    ValdemortModule,
+    InputAlphanumericDirective,
+    FormItem
   ],
   template: `
     <nz-modal
@@ -63,60 +74,63 @@ export type FormModalConfig = {
           <form nz-form [formGroup]="formGroup()" (ngSubmit)="onOk()">
             @for (fieldName of formKeys(); track fieldName) {
               @let field = config()[fieldName];
-              <nz-form-item>
-                <nz-form-label [nzSpan]="field.labelSpan ?? 5" [nzRequired]="requiredFields().includes(fieldName)">{{ field.label }}</nz-form-label>
-                <nz-form-control [nzSpan]="field.controlSpan ?? 19">
-                  
-                  @switch (field.type) {
-                    @case ('string') {
-                      <input #inputs nz-input
-                        [formControlName]="fieldName"
-                        [inputAlphanumeric]="!!field.alphanumeric"
-                        [case]="field.alphanumeric?.case ?? 'none'"
-                      />
-                    }
-                    @case ('text') {
-                      <textarea #inputs nz-input
-                        [formControlName]="fieldName"
-                        [inputAlphanumeric]="!!field.alphanumeric"
-                        [case]="field.alphanumeric?.case ?? 'none'"
-                      ></textarea>
-                    }
-                    @case ('number') {
-                      <input #inputs type="number" nz-input [formControlName]="fieldName" />
-                    }
-                    @case ('select') {
-                      <nz-select #inputs nzShowSearch nzAllowClear [formControlName]="fieldName">
-                        @for (option of config()[fieldName].options; track option.value) {
-                          <nz-option [nzValue]="option.value" [nzLabel]="option.label" />
-                        }
-                      </nz-select>
-                    }
-                    @case ('date') {
-                      <nz-date-picker #inputs [formControlName]="fieldName" />
-                    }
-                    @case ('switch') {
-                      <nz-switch #inputs [formControlName]="fieldName" />
-                    }
-                    @case ('autocomplete') {
-                      <input #inputs
-                        nz-input
-                        [nzAutocomplete]="auto"
-                        [formControlName]="fieldName"
-                        [inputAlphanumeric]="!!field.alphanumeric"
-                        [case]="field.alphanumeric?.case ?? 'none'"
-                      />
-                      <nz-autocomplete #auto [compareWith]="compareFun">
-                        @for (option of getAutocompleteOpts(fieldName); track $index) {
-                          <nz-auto-option [nzValue]="option" [nzLabel]="option.label">
-                            {{ option.label }}
-                          </nz-auto-option>
-                        }
-                      </nz-autocomplete>
-                    }
+              <pos-form-item
+                [label]="field.label"
+                [labelSpan]="field.labelSpan ?? 5"
+                [controlSpan]="field.controlSpan ?? 19"
+                [required]="requiredFields().includes(fieldName)"
+              >
+                @switch (field.type) {
+                  @case ('string') {
+                    <input #inputs nz-input
+                      [formControlName]="fieldName"
+                      [inputAlphanumeric]="!!field.alphanumeric"
+                      [case]="field.alphanumeric?.case ?? 'none'"
+                    />
                   }
-                </nz-form-control>
-              </nz-form-item>
+                  @case ('text') {
+                    <textarea #inputs nz-input
+                      [formControlName]="fieldName"
+                      [inputAlphanumeric]="!!field.alphanumeric"
+                      [case]="field.alphanumeric?.case ?? 'none'"
+                    ></textarea>
+                  }
+                  @case ('number') {
+                    <input #inputs type="number" nz-input [formControlName]="fieldName" />
+                  }
+                  @case ('select') {
+                    <nz-select #inputs nzShowSearch nzAllowClear [formControlName]="fieldName">
+                      @for (option of config()[fieldName].options; track option.value) {
+                        <nz-option [nzValue]="option.value" [nzLabel]="option.label" />
+                      }
+                    </nz-select>
+                  }
+                  @case ('date') {
+                    <nz-date-picker #inputs [formControlName]="fieldName" />
+                  }
+                  @case ('switch') {
+                    <nz-switch #inputs [formControlName]="fieldName" />
+                  }
+                  @case ('autocomplete') {
+                    <input #inputs
+                      nz-input
+                      [nzAutocomplete]="auto"
+                      [formControlName]="fieldName"
+                      [inputAlphanumeric]="!!field.alphanumeric"
+                      [case]="field.alphanumeric?.case ?? 'none'"
+                      (ngModelChange)="updateAutocompleteOptions(fieldName, $event)"
+                    />
+                    <nz-autocomplete #auto [compareWith]="compareFun">
+                      @for (option of fieldsOptions()[fieldName]; track $index) {
+                        <nz-auto-option [nzValue]="option" [nzLabel]="option.label">
+                          {{ option.label }}
+                        </nz-auto-option>
+                      }
+                    </nz-autocomplete>
+                  }
+                }
+                <val-errors [controlName]="fieldName" />
+              </pos-form-item>
             }
             <button type="submit" style="display: none;"></button>
           </form>
@@ -152,13 +166,25 @@ export class PosCrudModalForm<T> {
     .filter(key => this.formGroup().get(key)?.hasValidator(Validators.required))
   );
 
+  fieldsWithOptions = computed(() => Object.keys(this.config())
+    .filter(key => this.config()[key].options)
+  );
+
+  fieldsOptions = signal<{[key: string]: ControlOption[]}>({});
+
   afterOpen() {
-    setTimeout(() => {
-      if (this.store.formEditMode() && this.store.formItem()) {
-        this.patchFormValue(this.store.formItem() as any);
-      }
-      this.inputs.first.nativeElement.focus();
-    }, 0);
+    this.fieldsOptions.set(
+      this.fieldsWithOptions().reduce((acc, key) => {
+        acc[key] = this.config()[key].options ?? [];
+        return acc;
+      }, {} as {[key: string]: ControlOption[]})
+    );
+
+    if (this.store.formEditMode() && this.store.formItem()) {
+      this.patchFormValue(this.store.formItem() as any);
+    }
+
+    setTimeout(() => this.inputs.first.nativeElement.focus(), 0);
   }
 
   onCancel() {
@@ -194,25 +220,24 @@ export class PosCrudModalForm<T> {
     this.store.hideModalForm();
   }
 
-  getAutocompleteOpts(field: string) {
-    // get options from config
-    const options = this.config()[field].options;
-    // get value from form group
-    const formValue = this.formGroup().get(field)?.value;
-    
-    if (!formValue) {
-      return options ?? [];
-    }
-
-    const strValue = typeof formValue === 'string' ? formValue : formValue.value;
-    
-    if (!strValue) {
-      return options ?? [];
-    }
-
-    // return options filtered by value
-    return options?.filter(option => option.label.toLowerCase().includes(strValue.toLowerCase()));
+  updateAutocompleteOptions(fieldName: string, value: string | ControlOption) {
+    // Get the value as a string
+    const strValue = (typeof value === 'string' ? value : value.value).trim();
+    // Get the possible options
+    const options = this.config()[fieldName].options ?? [];
+    // Filter the options
+    const filteredOptions = options.filter(option => option.label.toLowerCase().includes(strValue.toLowerCase()));
+    // Update the options
+    this.fieldsOptions.update(prev => ({ ...prev, [fieldName]: filteredOptions }));
   }
+
+  compareFun = (o1: any, o2: any): boolean => {
+    if (o1) {
+      return typeof o1 === 'string' ? o1 === o2.label : o1.value === o2.value;
+    } else {
+      return false;
+    }
+  };
 
   private patchFormValue(formValue: any) {
     const patchedFormValue = { ...formValue };
@@ -224,13 +249,5 @@ export class PosCrudModalForm<T> {
 
     this.formGroup().patchValue(patchedFormValue);
   }
-
-  compareFun = (o1: any, o2: any): boolean => {
-    if (o1) {
-      return typeof o1 === 'string' ? o1 === o2.label : o1.value === o2.value;
-    } else {
-      return false;
-    }
-  };
 }
 

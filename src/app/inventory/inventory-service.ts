@@ -37,12 +37,18 @@ export class InventoryService {
 
   getFormValue(product: ProductDTO | null, form: FormGroup): ProductEntity {
     const formValue = form.getRawValue();
+
+    // set the id if the product is not null (update)
     if (product !== null && product.id) {
       formValue.id = product.id;
     }
 
-    formValue.price = formValue.price > -1 ? +formValue.price : 0;
-    formValue.cost = formValue.cost > -1 ? +formValue.cost : 0;
+    // categoryId value is an  autocomplete object with value and label properties
+    formValue.categoryId = formValue.categoryId?.value;
+    
+    // set default values if the fields are empty
+    formValue.price = formValue.price ?? 0;
+    formValue.cost = formValue.cost ?? 0;
     
     return formValue as ProductEntity;
   }

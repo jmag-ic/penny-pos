@@ -10,12 +10,24 @@ import { NzIconModule } from 'ng-zorro-antd/icon';
 import { NzLayoutModule } from 'ng-zorro-antd/layout';
 import { NzMenuModule } from 'ng-zorro-antd/menu';
 
+import { DisplayMode, ValdemortConfig, ValdemortModule } from 'ngx-valdemort';
+
 import { map } from 'rxjs';
 import { AppStore } from './app.store';
 
 @Component({
   selector: 'app-root',
-  imports: [CommonModule, RouterModule, RouterOutlet, NzAvatarModule, NzBreadCrumbModule, NzIconModule, NzLayoutModule, NzMenuModule],
+  imports: [
+    CommonModule,
+    RouterModule,
+    RouterOutlet,
+    NzAvatarModule,
+    NzBreadCrumbModule,
+    NzIconModule,
+    NzLayoutModule,
+    NzMenuModule,
+    ValdemortModule
+  ],
   template: `
   <nz-layout>
     <nz-sider
@@ -66,7 +78,24 @@ import { AppStore } from './app.store';
       </nz-content>
     </nz-layout>
 
-  </nz-layout>`,
+  </nz-layout>
+  
+  <val-default-errors>
+    <ng-template valError="required" let-label>{{ label || 'Campo' }} requerido</ng-template>
+    <ng-template valError="email" let-label>E-mail inválido</ng-template>
+    <ng-template valError="min" let-error="error" let-label>
+      {{ label || 'El valor' }} debe ser al menos {{ error.min | number }}
+    </ng-template>
+    <ng-template valError="max" let-error="error" let-label>
+      {{ label || 'El valor' }} debe ser como máximo {{ error.max | number }}
+    </ng-template>
+    <ng-template valError="minlength" let-error="error" let-label>
+      {{ label || 'El valor' }} debe tener al menos {{ error.minlength | number }} caracteres
+    </ng-template>
+    <ng-template valError="maxlength" let-error="error" let-label>
+      {{ label || 'El valor' }} debe tener como máximo {{ error.maxlength | number }} caracteres
+    </ng-template>
+  </val-default-errors>`,
   styles: [`
   .logo {
     height: 70px;
@@ -98,7 +127,11 @@ export class AppComponent {
   protected readonly store = inject(AppStore)
   private readonly breakPointObsserver = inject(BreakpointObserver)
 
-  constructor() {
+  constructor(config: ValdemortConfig) {
+    config.errorsClasses = 'invalid-feedback';
+    config.displayMode = DisplayMode.ONE;
+    config.shouldDisplayErrors = (control, _) => control.dirty || control.touched;
+
     const isCollapsed$ = this.breakPointObsserver.observe([`(max-width: 1024px)`]).pipe(
       map(result => result.matches)
     );

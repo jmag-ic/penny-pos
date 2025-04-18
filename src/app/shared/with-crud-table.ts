@@ -35,12 +35,14 @@ export interface ICrudTableStore<T> extends IModalFormStore<T> {
   items: () => T[];
   loadingTable: () => boolean;
   metadata: () => ItemMetadata<T>;
+  orderBy: () => { [key: string]: 'ascend' | 'descend' };
   pageSize: () => number;
   searchText: () => string;
   selectedItem: () => T;
   total: () => number;
   // Getters
-  getSortOrder: (key: string) => 'ascend' | 'descend' | null;
+  setSearchText: (searchText: string) => void;
+  getSortOrder: (key: string) => 'ascend' | 'descend';
   // Setters
   setCurrentPage: (page: number) => void;
   setMetadata: (metadata: ItemMetadata<T> | undefined) => void;

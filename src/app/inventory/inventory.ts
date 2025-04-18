@@ -64,7 +64,7 @@ import { MODAL_FORM_STORE } from "../shared/with-crud-modal-form";
     <pos-crud-table
       [columns]="columns()"
       [metadata]="metadata()"
-      [scroll]="{ y: 'calc(100vh - 13.2rem)' }"
+      [scroll]="{ y: 'calc(100vh - 15.7rem)' }"
     />
 
     <ng-template #suffixIconButton>

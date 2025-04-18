@@ -1,4 +1,4 @@
-import { Component, inject, input, OnInit } from "@angular/core";
+import { Component, computed, inject, input, OnInit, signal } from "@angular/core";
 
 import { NzButtonModule } from "ng-zorro-antd/button";
 import { NzIconModule } from "ng-zorro-antd/icon";
@@ -6,6 +6,7 @@ import { NzModalModule, NzModalService } from "ng-zorro-antd/modal";
 import { NzTableModule } from "ng-zorro-antd/table";
 
 import { ICrudTableStore, CRUD_TABLE_STORE, ItemMetadata } from "./with-crud-table";
+import { PosTableFilters } from "./table-filters";
 
 export type Column<T> = {
   key: keyof T;
@@ -16,13 +17,20 @@ export type Column<T> = {
 
 @Component({
   selector: 'pos-crud-table',
-  imports: [NzButtonModule, NzIconModule, NzModalModule, NzTableModule],
+  imports: [NzButtonModule, NzIconModule, NzModalModule, NzTableModule, PosTableFilters],
   template: `
     <ng-template #totalTemplate>
       <span>
         Total: {{ store.total() }}
       </span>
     </ng-template>
+    
+    <pos-table-filters
+      [filters]="filters()"
+      [sorts]="sorts()"
+      (onRemoveFilter)="onRemoveFilter($event)"
+      (onRemoveSort)="onRemoveSort($event)"
+    />
     <nz-table
       nzShowPagination
       nzShowSizeChanger
@@ -97,11 +105,23 @@ export class PosCrudTable<T extends Record<string, any>> implements OnInit {
   scroll = input<{ x?: string | null, y?: string | null }>({ x: null, y: null });
   metadata = input<ItemMetadata<T>>();
 
+  filters = computed(() => {
+    const searchText = this.store.searchText()
+    if (!searchText) {
+      return [];
+    }
+    return [{ key: 'search', label: `Buscar`, value: searchText }];
+  });
+
+  sorts = computed(() => Object.entries(this.store.orderBy())
+    .map(([key, value]) => ({ key, label: this.columns().find(c => c.key === key)?.label ?? key, direction: value as 'ascend' | 'descend' }))
+  );
+
   protected store = inject<ICrudTableStore<T>>(CRUD_TABLE_STORE);
   protected modal = inject(NzModalService);
 
   protected onSortOrderChange(key: string, order: string | null): void {
-    this.store.setOrderBy(key, order as 'ascend' | 'descend' | null);
+    this.store.setOrderBy(key, order as 'ascend' | 'descend');
   }
 
   // set the metadata to the store
@@ -129,6 +149,14 @@ export class PosCrudTable<T extends Record<string, any>> implements OnInit {
       nzOnOk: () => this.store.delete(item),
       nzCancelText: 'No'
     });
+  }
+
+  onRemoveFilter(_: string) {
+    this.store.setSearchText('');
+  }
+
+  onRemoveSort(key: string) {
+    this.store.setOrderBy(key, null);
   }
 
   protected getColumnValue(item: T, column: Column<T>): any {

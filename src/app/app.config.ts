@@ -23,6 +23,9 @@ import {
   TruckOutline,
   EditOutline,
   DeleteOutline,
+  FilterOutline,
+  SortAscendingOutline,
+  SortDescendingOutline,
 } from '@ant-design/icons-angular/icons';
 
 import { routes } from './app.routes';
@@ -35,12 +38,15 @@ const icons: IconDefinition[] = [
   ExportOutline,
   FilePdfOutline,
   FileExcelOutline,
+  FilterOutline,
   HomeOutline,
   ImportOutline,
   PlusOutline,
   SearchOutline,
   SettingOutline,
   ShoppingOutline,
+  SortAscendingOutline,
+  SortDescendingOutline,
   StockOutline,
   TagOutline,
   TeamOutline,

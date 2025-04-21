@@ -83,7 +83,7 @@ class Handlers {
   // Catalogs API
   @Transactional()
   async getCategories() {
-    return categoryRepo.getAll('name');
+    return categoryRepo.getAll({name: 'ascend'});
   }
 }
 

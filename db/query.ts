@@ -1,4 +1,5 @@
-import { objectToCamelCase } from "../utils";
+import { OrderBy } from "../models";
+import { objectToCamelCase, objectToSnakeCase } from "../utils";
 import { Database } from "sqlite3";
 
 // QueryBuilder is a class that helps to build SQL statements
@@ -32,8 +33,10 @@ export class QueryBuilder {
   }
 
   // orderBy method sets the ORDER BY clause
-  orderBy(orderBy: string): QueryBuilder {
-    this._orderBy = orderBy
+  orderBy(orderBy: OrderBy): QueryBuilder {
+    this._orderBy = Object.entries(objectToSnakeCase(orderBy))
+      .map(([field, order]) => `${field} ${order === 'ascend' ? 'ASC' : 'DESC'}`)
+      .join(', ')
     return this
   }
 

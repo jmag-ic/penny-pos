@@ -5,6 +5,8 @@ import { pipe, tap, map, switchMap, catchError, of } from "rxjs";
 
 import { NzNotificationService } from "ng-zorro-antd/notification";
 
+import { OrderBy, SortOrder } from "@pos/models";
+
 import { withCrudModalForm, IModalFormStore } from "./with-crud-modal-form";
 import { ICrudService } from "./crud-service";
 
@@ -22,7 +24,7 @@ export type CrudTableState<T> = {
   items: T[];
   loadingTable: boolean;
   metadata: ItemMetadata<T>;
-  orderBy: { [key: string]: string };
+  orderBy: OrderBy;
   pageSize: number;
   searchText: string;
   selectedItem: T | null;
@@ -35,18 +37,18 @@ export interface ICrudTableStore<T> extends IModalFormStore<T> {
   items: () => T[];
   loadingTable: () => boolean;
   metadata: () => ItemMetadata<T>;
-  orderBy: () => { [key: string]: 'ascend' | 'descend' };
+  orderBy: () => OrderBy;
   pageSize: () => number;
   searchText: () => string;
   selectedItem: () => T;
   total: () => number;
   // Getters
   setSearchText: (searchText: string) => void;
-  getSortOrder: (key: string) => 'ascend' | 'descend';
+  getSortOrder: (key: string) => SortOrder;
   // Setters
   setCurrentPage: (page: number) => void;
   setMetadata: (metadata: ItemMetadata<T> | undefined) => void;
-  setOrderBy: (key: string, order: 'ascend' | 'descend' | null) => void;
+  setOrderBy: (key: string, order: SortOrder | null) => void;
   setPageSize: (size: number) => void;
   setSelectedItem: (item: T) => void;
   // Methods
@@ -56,13 +58,6 @@ export interface ICrudTableStore<T> extends IModalFormStore<T> {
   create: (item: T) => Promise<T>;
   update: (item: T) => Promise<T>;
 }
-
-const sortOrderDict: { [key: string]: string } = {
-  'ascend': 'ASC',
-  'descend': 'DESC',
-};
-
-export type SortOrder = string | null;
 
 export const withCrudTable = <T, D>(
   CrudService: ProviderToken<ICrudService<T, D>>,
@@ -127,7 +122,7 @@ export const withCrudTable = <T, D>(
 
           if (!order) {
             delete orderBy[field];
-          } else if (order && order in sortOrderDict) {
+          } else {
             orderBy[field] = order;
           }
           
@@ -171,14 +166,10 @@ export const withCrudTable = <T, D>(
             // Build the page params object   
             map(() => {
               const offset = (store.currentPage() - 1) * store.pageSize();
-              const orderBy = Object.entries(store.orderBy())
-                .map(([key, value]) => `${key} ${sortOrderDict[value]}`)
-                .join(', ');
-
               return {
                 text: store.searchText(),
                 limit: store.pageSize(),
-                orderBy,
+                orderBy: store.orderBy(),
                 offset
             }}),
             // Load the page

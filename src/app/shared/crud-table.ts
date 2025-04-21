@@ -11,6 +11,7 @@ import { PosTableFilters } from "./table-filters";
 export type Column<T> = {
   key: keyof T;
   label: string;
+  path?: string;
   width?: string;
   format?: (value: any) => any;
 }
@@ -162,7 +163,7 @@ export class PosCrudTable<T extends Record<string, any>> implements OnInit {
   protected getColumnValue(item: T, column: Column<T>): any {
     let value = item;
     
-    const keys = column.key.toString().split('.');
+    const keys = (column.path ? column.path : column.key).toString().split('.');
     for (const key of keys) {
       if (!value) {
         return '';

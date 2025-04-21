@@ -1,5 +1,5 @@
 import { SqliteDb, Transactional, utils } from "../db";
-import { PageParams, Page } from "../models";
+import { PageParams, Page, OrderBy } from "../models";
 
 type TableMetadata<T> = {
   table: string;
@@ -33,7 +33,7 @@ export abstract class Repository<T> {
     return data;
   }
 
-  getAll(orderBy?: string): Promise<T[]> {
+  getAll(orderBy?: OrderBy): Promise<T[]> {
     const query = this.conn.query(this.metadata.table);
     if (orderBy) {
       query.orderBy(orderBy)

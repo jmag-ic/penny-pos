@@ -154,8 +154,9 @@ export class Inventory extends CtrlCommander implements OnInit {
       label: 'Nombre',
       width: '300px'
     }, {
-      key: 'category.name',
+      key: 'categoryId',
       label: 'Categoría',
+      path: 'category.name',
       width: '120px'
     }, {
       key: 'stock',

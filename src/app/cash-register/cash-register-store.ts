@@ -295,7 +295,7 @@ export const SalesStore = signalStore(
             if (!searchText) {
               return of({items: [], total: 0});
             }
-            return api.searchProducts({ text: searchText, orderBy: 'name' }).pipe(
+            return api.searchProducts({ text: searchText, orderBy: {name: 'ascend'}}).pipe(
               catchError((error: Error) => {
                 console.error('Error searching products:', error);
                 notification.error('Error al buscar productos', `${error.message}`, { nzDuration: 0 });

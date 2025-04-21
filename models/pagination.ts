@@ -3,9 +3,12 @@ export interface Page<T> {
   total: number;
 }
 
+export type SortOrder = 'ascend' | 'descend';
+export type OrderBy = {[key: string]: SortOrder}
+
 export interface PageParams {
   text?: string;
-  orderBy?: string;
+  orderBy?: OrderBy;
   limit?: number;
   offset?: number;
 }

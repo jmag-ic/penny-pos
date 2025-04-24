@@ -10,7 +10,7 @@ import { ApiService } from "../api";
 export class InventoryService {
   private api = inject(ApiService);
 
-  load(pageParams: PageParams): Observable<Page<ProductDTO>> {
+  load(pageParams: PageParams<ProductEntity>): Observable<Page<ProductDTO>> {
     return this.api.searchProducts(pageParams).pipe(
       map(page => ({
         ...page,

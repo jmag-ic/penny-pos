@@ -18,7 +18,7 @@ const api: IAPI = {
     return ipcRenderer.invoke('deleteProduct', id);
   },
   
-  searchProducts: (pageParams: PageParams) => {
+  searchProducts: (pageParams: PageParams<ProductEntity>) => {
     return ipcRenderer.invoke('searchProducts', pageParams);
   },
   

@@ -33,7 +33,7 @@ export abstract class Repository<T> {
     return data;
   }
 
-  getAll(orderBy?: OrderBy): Promise<T[]> {
+  getAll(orderBy?: OrderBy<T>): Promise<T[]> {
     const query = this.conn.query(this.metadata.table);
     if (orderBy) {
       query.orderBy(orderBy)
@@ -84,7 +84,7 @@ export abstract class Repository<T> {
   }
 
   @Transactional()
-  async pagedSearch(pageParams: PageParams, searchColumns: string[] = [], fts: boolean = false): Promise<Page<T>> {
+  async pagedSearch(pageParams: PageParams<T>, searchColumns: string[] = [], fts: boolean = false): Promise<Page<T>> {
     const itemsQuery = this.conn.query(this.metadata.table);
     const totalQuery = this.conn.query(this.metadata.table).columns('COUNT(*) total')
 

@@ -24,7 +24,7 @@ export type CrudTableState<T> = {
   items: T[];
   loadingTable: boolean;
   metadata: ItemMetadata<T>;
-  orderBy: OrderBy;
+  orderBy: OrderBy<T>;
   pageSize: number;
   searchText: string;
   selectedItem: T | null;
@@ -37,7 +37,7 @@ export interface ICrudTableStore<T> extends IModalFormStore<T> {
   items: () => T[];
   loadingTable: () => boolean;
   metadata: () => ItemMetadata<T>;
-  orderBy: () => OrderBy;
+  orderBy: () => OrderBy<T>;
   pageSize: () => number;
   searchText: () => string;
   selectedItem: () => T;
@@ -97,7 +97,7 @@ export const withCrudTable = <T, D>(
         getItemLabel: (item: T) => {
           return item[store.metadata().nameField];
         },
-        getSortOrder: (key: string) => {
+        getSortOrder: (key: keyof T) => {
           return store.orderBy()[key] ?? null;
         },
         // Setters
@@ -117,7 +117,7 @@ export const withCrudTable = <T, D>(
           }
           patchState(store, { metadata });
         },
-        setOrderBy(field: string, order: SortOrder) {
+        setOrderBy(field: keyof T, order: SortOrder) {
           let orderBy = { ...store.orderBy() };
 
           if (!order) {

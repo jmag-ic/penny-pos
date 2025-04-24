@@ -14,7 +14,7 @@ export class ApiService {
     return api.checkout(saleDTO)
   }
 
-  searchProducts(pageParams: PageParams): Observable<Page<ProductDTO>> {
+  searchProducts(pageParams: PageParams<ProductEntity>): Observable<Page<ProductDTO>> {
     return from(api.searchProducts(pageParams));
   }
 

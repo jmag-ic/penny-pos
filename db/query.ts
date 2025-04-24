@@ -3,7 +3,7 @@ import { objectToCamelCase, objectToSnakeCase } from "../utils";
 import { Database } from "sqlite3";
 
 // QueryBuilder is a class that helps to build SQL statements
-export class QueryBuilder {
+export class QueryBuilder<T> {
   private db: Database;
   private table: string;
   private _columns: string;
@@ -20,20 +20,20 @@ export class QueryBuilder {
   }
 
   // columns method sets the columns to be selected
-  columns(columns: string): QueryBuilder {
+  columns(columns: string): QueryBuilder<T> {
     this._columns = columns
     return this
   }
 
   // where method sets the WHERE clause based on the provided condition and parameters
-  where(where: string, ...params: any[]): QueryBuilder {
+  where(where: string, ...params: any[]): QueryBuilder<T> {
     this._where = where
     this.params = params
     return this
   }
 
   // orderBy method sets the ORDER BY clause
-  orderBy(orderBy: OrderBy): QueryBuilder {
+  orderBy(orderBy: OrderBy<T>): QueryBuilder<T> {
     this._orderBy = Object.entries(objectToSnakeCase(orderBy))
       .map(([field, order]) => `${field} ${order === 'ascend' ? 'ASC' : 'DESC'}`)
       .join(', ')
@@ -41,13 +41,13 @@ export class QueryBuilder {
   }
 
   // limit method sets the LIMIT clause
-  limit(limit: number): QueryBuilder {
+  limit(limit: number): QueryBuilder<T> {
     this._limit = limit
     return this
   }
 
   // offset method sets the OFFSET clause
-  offset(offset: number): QueryBuilder {
+  offset(offset: number): QueryBuilder<T> {
     this._offset = offset
     return this
   }

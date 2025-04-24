@@ -13,7 +13,7 @@ const saleItemRepo = new SaleItemRepository(db);
 class Handlers {
   // Products API
   @Transactional()
-  async searchProducts(pageParams: PageParams) {
+  async searchProducts(pageParams: PageParams<ProductEntity>) {
     const productsPage = await productRepo.pagedSearch(pageParams, ['name', 'description'], true);
     const productsData = await productRepo.loadRelated(categoryRepo, productsPage.items, 'categoryId', 'category');
     
@@ -85,13 +85,19 @@ class Handlers {
   async getCategories() {
     return categoryRepo.getAll({name: 'ascend'});
   }
+
+  // Sales API
+  @Transactional()
+  async getSales() {
+    return saleRepo.getAll({saleDate: 'descend'});
+  }
 }
 
 const handlers = new Handlers();
 export const loadHandlers = () => {
   // Register IPC handlers
   // Products API
-  ipcMain.handle('searchProducts', (_, params: PageParams) =>  handlers.searchProducts(params));
+  ipcMain.handle('searchProducts', (_, params: PageParams<ProductEntity>) =>  handlers.searchProducts(params));
   ipcMain.handle('createProduct', (_, params: ProductEntity) => handlers.createProduct(params));
   ipcMain.handle('updateProduct', (_, params: ProductEntity) => handlers.updateProduct(params));
   ipcMain.handle('deleteProduct', (_, id: number) => handlers.deleteProduct(id));

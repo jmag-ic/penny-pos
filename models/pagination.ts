@@ -4,11 +4,11 @@ export interface Page<T> {
 }
 
 export type SortOrder = 'ascend' | 'descend';
-export type OrderBy = {[key: string]: SortOrder}
+export type OrderBy<T> = {[key in keyof T]?: SortOrder}
 
-export interface PageParams {
+export interface PageParams<T> {
   text?: string;
-  orderBy?: OrderBy;
+  orderBy?: OrderBy<T>;
   limit?: number;
   offset?: number;
 }

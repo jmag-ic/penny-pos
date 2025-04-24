@@ -15,8 +15,8 @@ export class SqliteDb {
     return this.db
   }
 
-  query(tableName: string): QueryBuilder {
-    return new QueryBuilder(this.db, tableName)
+  query<T>(tableName: string): QueryBuilder<T> {
+    return new QueryBuilder<T>(this.db, tableName)
   }
 
   insert<T>(tableName: string, idColumn: keyof T, data: Partial<T>): Promise<number | string> {

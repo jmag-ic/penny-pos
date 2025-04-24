@@ -1,5 +1,5 @@
 import { Component, HostBinding, inject, Input } from "@angular/core";
-import { DecimalPipe } from "@angular/common";
+import { DatePipe, DecimalPipe } from "@angular/common";
 import { FormsModule } from '@angular/forms';
 
 import { NzButtonModule } from 'ng-zorro-antd/button'
@@ -11,13 +11,17 @@ import { SalesStore } from "./cash-register-store";
 
 @Component({
   selector: "pos-ticket",
-  imports: [FormsModule, DecimalPipe, NzButtonModule, NzIconModule, NzInputNumberModule, NzListModule],
+  imports: [FormsModule, DatePipe, DecimalPipe, NzButtonModule, NzIconModule, NzInputNumberModule, NzListModule],
   template: `
     <div class="table-container">
       <table class="full-w">
         <thead>
           <tr>
-            <th colspan=5 class="text-center">Ticket de venta {{ store.currentSale().id }}</th>
+            <th colspan=5 style="display: flex; justify-content: space-between;">
+              <span></span>
+              <span>Ticket de Venta {{ store.currentSale().id }}</span>
+              <span>{{ store.currentSale().date | date:'hh:mm:ss a' }}</span>
+            </th>
           </tr>
         </thead>
         <tbody>

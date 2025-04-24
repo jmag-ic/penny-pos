@@ -22,6 +22,7 @@ export type Sale = {
   products: ProductEntity[];
   ticket: LineItem[];
   selectedProductIdx: number;
+  date: Date;
 };
 
 const emptySale: Sale = {
@@ -30,7 +31,8 @@ const emptySale: Sale = {
   searchText: '',
   products: [],
   ticket: [],
-  selectedProductIdx: 0
+  selectedProductIdx: 0,
+  date: new Date()
 };
 
 type Sales = {
@@ -142,7 +144,8 @@ export const SalesStore = signalStore(
         const nextSaleNumber = store.currentSaleNumber() + 1;
         const newSale: Sale = {
           ...emptySale,
-          id: nextSaleNumber
+          id: nextSaleNumber,
+          date: new Date()
         };
 
         patchState(store, (state) => ({

@@ -113,7 +113,7 @@ export abstract class Repository<T> {
     const allParams = [...filterParams, ...likeParams];
 
     if (allConditions.length > 0) {
-      const whereClause = `(${allConditions.join(' AND ')})`;
+      const whereClause = `${allConditions.join(' AND ')}`;
       itemsQuery.where(whereClause, ...allParams);
       totalQuery.where(whereClause, ...allParams);
     }

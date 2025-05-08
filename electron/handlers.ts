@@ -1,6 +1,6 @@
 import { ipcMain } from "electron";
 import { DatabaseManager, Transactional } from "../db";
-import { ProductEntity, PageParams, SaleDTO } from "../models";
+import { ProductEntity, PageParams, SaleDTO, SaleEntity } from "../models";
 import { ProductRepository, CategoryRepository, SaleRepository, SaleItemRepository } from "../repository";
 
 // Create repository instances using the singleton database connection
@@ -14,7 +14,7 @@ class Handlers {
   // Products API
   @Transactional()
   async searchProducts(pageParams: PageParams<ProductEntity>) {
-    const productsPage = await productRepo.pagedSearch(pageParams, ['name', 'description'], true);
+    const productsPage = await productRepo.getPage(pageParams);
     const productsData = await productRepo.loadRelated(categoryRepo, productsPage.items, 'categoryId', 'category');
     
     return {

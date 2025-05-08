@@ -6,7 +6,7 @@ import { toSlug } from "../utils";
 
 export class ProductRepository extends Repository<ProductEntity> {
   constructor(conn: SqliteDb) {
-    super(conn, { table: 'product', idColumn: 'id' });
+    super(conn, { table: 'product', idColumn: 'id', ftsTable: 'product_fts' });
   }
 }
 

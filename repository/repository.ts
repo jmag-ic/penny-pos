@@ -1,9 +1,21 @@
 import { SqliteDb, Transactional, utils } from "../db";
-import { PageParams, Page, OrderBy } from "../models";
+import { PageParams, Page, OrderBy, FilterOperator, Filter } from "../models";
 
 type TableMetadata<T> = {
   table: string;
   idColumn: keyof T;
+  ftsTable?: string;
+}
+
+// Sqlite operators dictionary
+const sqlOpDict: Record<FilterOperator, string> = {
+  eq: '=',
+  neq: '!=',
+  gt: '>',
+  lt: '<',
+  gte: '>=',
+  lte: '<=',
+  like: 'LIKE'
 }
 
 export abstract class Repository<T> {
@@ -84,38 +96,104 @@ export abstract class Repository<T> {
   }
 
   @Transactional()
-  async pagedSearch(pageParams: PageParams<T>, searchColumns: string[] = [], fts: boolean = false): Promise<Page<T>> {
+  async getPage(pageParams: PageParams<T>): Promise<Page<T>> {
     const itemsQuery = this.conn.query(this.metadata.table);
-    const totalQuery = this.conn.query(this.metadata.table).columns('COUNT(*) total')
+    const totalQuery = this.conn.query(this.metadata.table).columns('COUNT(*) total');
 
-    if (pageParams.text) {
-      const {likeClause, params} = utils.exhaustLike(pageParams.text, ...searchColumns)
-      let whereClause = likeClause
+    // Handle regular filters
+    const { conditions: filterConditions, params: filterParams, likeFilters } = 
+      this.buildFilterConditions(pageParams.filter);
 
-      if (fts) {
-        whereClause += ` OR id IN (SELECT rowid FROM ${this.metadata.table}_fts WHERE ${this.metadata.table}_fts MATCH ?)`
-        params.push(pageParams.text+'*');
-      }
+    // Handle like conditions and FTS
+    const { conditions: likeConditions, params: likeParams } = 
+      this.buildLikeConditions(likeFilters);
 
-      itemsQuery.where(whereClause, ...params)
-      totalQuery.where(whereClause, ...params)
+    // Combine all conditions
+    const allConditions = [...filterConditions, likeConditions.join(' OR ')];
+    const allParams = [...filterParams, ...likeParams];
+
+    if (allConditions.length > 0) {
+      const whereClause = `(${allConditions.join(' AND ')})`;
+      itemsQuery.where(whereClause, ...allParams);
+      totalQuery.where(whereClause, ...allParams);
     }
 
-    if (pageParams.orderBy) {
-      itemsQuery.orderBy(pageParams.orderBy)
-    }
-
-    if (pageParams.limit) {
-      itemsQuery.limit(pageParams.limit)
-    }
-
-    if (pageParams.offset) {
-      itemsQuery.offset(pageParams.offset)
-    }
+    // Apply pagination
+    this.applyPagination(itemsQuery, pageParams);
 
     return {
       items: await itemsQuery.build().all<T>(),
       total: (await totalQuery.build().get<{ total: number }>()).total
+    };
+  }
+
+  private buildFilterConditions(filter: { [key in keyof T]?: Filter | undefined } | undefined): { 
+    conditions: string[], 
+    params: any[],
+    likeFilters: { value: string, columns: string[] }[] 
+  } {
+    const conditions: string[] = [];
+    const params: any[] = [];
+    const likeFilters: { value: string, columns: string[] }[] = [];
+
+    if (!filter) return { conditions, params, likeFilters };
+
+    Object.entries(filter).forEach(([column, filter]) => {
+      if (!filter) return;
+      const { op, value } = filter as Filter;
+
+      if (op === 'like') {
+        const item = likeFilters.find(f => f.value === value);
+        if (item) {
+          item.columns.push(column);
+        } else {
+          likeFilters.push({ value, columns: [column] });
+        }
+      } else if (sqlOpDict[op]) {
+        conditions.push(`${column} ${sqlOpDict[op]} ?`);
+        params.push(value);
+      }
+    });
+
+    return { conditions, params, likeFilters };
+  }
+
+  private buildLikeConditions(likeFilters: { value: string, columns: string[] }[]): {
+    conditions: string[],
+    params: any[],
+    matchValues: string[]
+  } {
+    const conditions: string[] = [];
+    const params: any[] = [];
+    const matchValues: string[] = [];
+
+    likeFilters.forEach(f => {
+      const { likeClause, params: _params } = utils.exhaustLike(f.value, ...f.columns);
+      conditions.push(likeClause);
+      params.push(..._params);
+
+      if (this.metadata.ftsTable && !matchValues.find(v => v === f.value)) {
+        matchValues.push(f.value.includes(' ') ? `${f.value.split(' ').join('* ')}*` : `${f.value}*`);
+      }
+    });
+
+    if (this.metadata.ftsTable && matchValues.length > 0) {
+      conditions.push(`id IN (SELECT rowid FROM ${this.metadata.ftsTable} WHERE ${this.metadata.ftsTable} MATCH ?)`);
+      params.push(matchValues.join(' OR '));
+    }
+
+    return { conditions, params, matchValues };
+  }
+
+  private applyPagination(query: any, pageParams: PageParams<T>): void {
+    if (pageParams.orderBy) {
+      query.orderBy(pageParams.orderBy);
+    }
+    if (pageParams.limit) {
+      query.limit(pageParams.limit);
+    }
+    if (pageParams.offset) {
+      query.offset(pageParams.offset);
     }
   }
 }

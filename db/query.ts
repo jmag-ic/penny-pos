@@ -27,8 +27,8 @@ export class QueryBuilder<T> {
 
   // where method sets the WHERE clause based on the provided condition and parameters
   where(where: string, ...params: any[]): QueryBuilder<T> {
-    this._where = where
-    this.params = params
+    this._where = this._where ? `${this._where} AND ${where}` : where
+    this.params = this.params.concat(params)
     return this
   }
 

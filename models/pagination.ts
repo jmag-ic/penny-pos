@@ -6,8 +6,11 @@ export interface Page<T> {
 export type SortOrder = 'ascend' | 'descend';
 export type OrderBy<T> = {[key in keyof T]?: SortOrder}
 
+export type FilterOperator = 'eq' | 'neq' | 'gt' | 'lt' | 'gte' | 'lte' | 'like';
+export type Filter = {op: FilterOperator, value: any}
+
 export interface PageParams<T> {
-  text?: string;
+  filter?: {[key in keyof T]?: Filter};
   orderBy?: OrderBy<T>;
   limit?: number;
   offset?: number;

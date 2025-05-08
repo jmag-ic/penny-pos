@@ -5,7 +5,7 @@ import { catchError, filter, map, of, pipe, switchMap, tap } from 'rxjs';
 
 import { NzNotificationService } from 'ng-zorro-antd/notification';
 
-import { ProductEntity, SaleDTO, SaleItemEntity } from '@pos/models';
+import { PageParams, ProductEntity, SaleDTO, SaleItemEntity } from '@pos/models';
 import { ApiService } from '../api';
 
 export type LineItem = {
@@ -131,6 +131,22 @@ export const SalesStore = signalStore(
           total: product.price
         }
       ];
+    }
+
+    function buildPageParams(searchText: string): PageParams<ProductEntity> {
+      return {
+        filter: {
+          name: {
+            op: 'like',
+            value: searchText
+          },
+          description: {
+            op: 'like',
+            value: searchText
+          }
+        },
+        orderBy: { name: 'ascend' }
+      };
     }
 
     return {
@@ -298,7 +314,7 @@ export const SalesStore = signalStore(
             if (!searchText) {
               return of({items: [], total: 0});
             }
-            return api.searchProducts({ text: searchText, orderBy: {name: 'ascend'}}).pipe(
+            return api.searchProducts(buildPageParams(searchText)).pipe(
               catchError((error: Error) => {
                 console.error('Error searching products:', error);
                 notification.error('Error al buscar productos', `${error.message}`, { nzDuration: 0 });

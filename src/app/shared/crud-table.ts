@@ -16,6 +16,12 @@ export type Column<T> = {
   format?: (value: any) => any;
 }
 
+export type AllowedOperations = {
+  create?: boolean;
+  update?: boolean;
+  delete?: boolean;
+}
+
 @Component({
   selector: 'pos-crud-table',
   imports: [NzButtonModule, NzIconModule, NzModalModule, NzTableModule, PosTableFilters],
@@ -61,11 +67,15 @@ export type Column<T> = {
             >{{ column.label }}</th>
           }
           <!-- Actions column -->
-          <th nzWidth="90px" nzRight>
-            <button nz-button nzType="primary" style="width: 100%;" (click)="onNew()">
-              <nz-icon nzType="plus" />
-            </button>
-          </th>
+          @if(hasAnyOperation()) {
+            <th nzWidth="90px" nzRight>
+              @if(allowedOperations().create) {
+                <button nz-button nzType="primary" style="width: 100%;" (click)="onNew()">
+                  <nz-icon nzType="plus" />
+                </button>
+              }
+            </th>
+          }
         </tr>
       </thead>
       <tbody>
@@ -79,16 +89,22 @@ export type Column<T> = {
               <td>{{ column.format ? column.format(value) : value }}</td>
             }
             <!-- Actions column -->
-            <td nzRight>
-              <div style="display: flex; justify-content: center; gap: 4px;">
-                <button nz-button nzType="default" nzShape="circle" (click)="onEdit(item)">
-                  <i nz-icon nzType="edit" nzTheme="outline"></i>
-                </button> 
-                <button nz-button nzType="default" nzShape="circle" nzDanger (click)="onDelete(item)">
-                  <i nz-icon nzType="delete" nzTheme="outline"></i>
-                </button>
-              </div>
-            </td>
+            @if(hasAnyOperation()) {
+              <td nzRight>
+                <div style="display: flex; justify-content: center; gap: 4px;">
+                  @if(allowedOperations().update) {
+                    <button nz-button nzType="default" nzShape="circle" (click)="onEdit(item)">
+                      <i nz-icon nzType="edit" nzTheme="outline"></i>
+                    </button>
+                  }
+                  @if(allowedOperations().delete) {
+                    <button nz-button nzType="default" nzShape="circle" nzDanger (click)="onDelete(item)">
+                      <i nz-icon nzType="delete" nzTheme="outline"></i>
+                    </button>
+                  }
+                </div>
+              </td>
+            }
           </tr>
         }
       </tbody>
@@ -105,6 +121,11 @@ export class PosCrudTable<T extends Record<string, any>> implements OnInit {
   columns = input<Column<T>[]>([]);
   scroll = input<{ x?: string | null, y?: string | null }>({ x: null, y: null });
   metadata = input<ItemMetadata<T>>();
+  allowedOperations = input<AllowedOperations>({ 
+    create: true, 
+    update: true, 
+    delete: true 
+  });
 
   filters = computed(() => {
     const searchText = this.store.searchText()
@@ -117,6 +138,11 @@ export class PosCrudTable<T extends Record<string, any>> implements OnInit {
   sorts = computed(() => Object.entries(this.store.orderBy())
     .map(([key, value]) => ({ key, label: this.columns().find(c => c.key === key)?.label ?? key, direction: value as 'ascend' | 'descend' }))
   );
+
+  hasAnyOperation = computed(() => {
+    const ops = this.allowedOperations();
+    return ops.create || ops.update || ops.delete;
+  });
 
   protected store = inject<ICrudTableStore<T>>(CRUD_TABLE_STORE);
   protected modal = inject(NzModalService);

@@ -8,8 +8,9 @@ import { withCrudTable } from "../shared/with-crud-table";
 
 export const InventoryStore = signalStore(
   { providedIn: 'root' },
-  withCrudTable<ProductDTO, ProductEntity>(InventoryService),
+  withCrudTable<ProductEntity, ProductDTO>(InventoryService),
   withState({
+    searchText: '',
     categories: [] as CatalogEntity[],
   }),
   withComputed((store) => ({
@@ -23,6 +24,19 @@ export const InventoryStore = signalStore(
       } catch (error) {
         console.error('Failed to load categories:', error);
       }
+    },
+    setSearchText(searchText: string) {
+      patchState(store, {
+        searchText,
+        filters: searchText ? {
+          ...store.getFilters(),
+          name: {
+            value: searchText,
+            op: 'like'
+          }
+        } : {}
+      });
+      store.load();
     }
   })),
   withHooks({

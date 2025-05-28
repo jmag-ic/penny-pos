@@ -1,4 +1,4 @@
-import { Component, computed, inject, input, OnInit, signal } from "@angular/core";
+import { Component, computed, inject, input, OnInit, output } from "@angular/core";
 
 import { NzButtonModule } from "ng-zorro-antd/button";
 import { NzIconModule } from "ng-zorro-antd/icon";
@@ -121,6 +121,8 @@ export class PosCrudTable<T extends Record<string, any>> implements OnInit {
   columns = input<Column<T>[]>([]);
   scroll = input<{ x?: string | null, y?: string | null }>({ x: null, y: null });
   metadata = input<ItemMetadata<T>>();
+  filterRemoved = output<string>();
+
   allowedOperations = input<AllowedOperations>({ 
     create: true, 
     update: true, 
@@ -128,11 +130,12 @@ export class PosCrudTable<T extends Record<string, any>> implements OnInit {
   });
 
   filters = computed(() => {
-    const searchText = this.store.searchText()
-    if (!searchText) {
-      return [];
-    }
-    return [{ key: 'search', label: `Buscar`, value: searchText }];
+    const filters = this.store.getFilters()
+    return Object.entries(filters).filter(([_, value]) => value?.value).map(([key, value]) => ({
+      key,
+      label: this.columns().find(c => c.key === key)?.label ?? key,
+      value: value?.value
+    }));
   });
 
   sorts = computed(() => Object.entries(this.store.orderBy())
@@ -178,8 +181,12 @@ export class PosCrudTable<T extends Record<string, any>> implements OnInit {
     });
   }
 
-  onRemoveFilter(_: string) {
-    this.store.setSearchText('');
+  onRemoveFilter(key: string) {
+    this.store.setFilters({
+      ...this.store.getFilters(),
+      [key]: null
+    });
+    this.filterRemoved.emit(key);
   }
 
   onRemoveSort(key: string) {

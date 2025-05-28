@@ -1,13 +1,14 @@
 import { inject, Injectable } from "@angular/core";
-import { PageParams, ProductDTO, ProductEntity, Page } from "@pos/models";
+import { PageParams, ProductDTO, ProductEntity, Page, Filter } from "@pos/models";
 import { FormGroup } from "@angular/forms";
-import { map, Observable } from "rxjs";
+import { map, Observable, tap } from "rxjs";
 import { ApiService } from "../api";
+import { ICrudService } from "../shared/crud-service";
 
 @Injectable({
   providedIn: 'root'
 })
-export class InventoryService {
+export class InventoryService implements ICrudService<ProductEntity, ProductDTO> {
   private api = inject(ApiService);
 
   load(pageParams: PageParams<ProductEntity>): Observable<Page<ProductDTO>> {
@@ -23,19 +24,19 @@ export class InventoryService {
     )
   }
 
-  create(product: ProductDTO): Promise<ProductDTO> {
+  create(product: ProductEntity): Promise<ProductDTO> {
     return this.api.createProduct(product);
   }
 
-  update(product: ProductDTO): Promise<ProductDTO> {
+  update(product: ProductEntity): Promise<ProductDTO> {
     return this.api.updateProduct(product);
   }
 
-  delete(product: ProductDTO): Promise<ProductDTO> {
+  delete(product: ProductEntity): Promise<ProductDTO> {
     return this.api.deleteProduct(product.id);
   }
 
-  getFormValue(product: ProductDTO | null, form: FormGroup): ProductEntity {
+  getFormValue(product: ProductEntity | null, form: FormGroup): ProductEntity {
     const formValue = form.getRawValue();
 
     // set the id if the product is not null (update)
@@ -50,10 +51,10 @@ export class InventoryService {
     formValue.price = formValue.price ?? 0;
     formValue.cost = formValue.cost ?? 0;
     
-    return formValue as ProductEntity;
+    return formValue as ProductDTO;
   }
 
-  findItem(items: ProductDTO[], selectedItem: ProductDTO): ProductDTO {
+  findItem(items: ProductEntity[], selectedItem: ProductEntity): ProductEntity {
     return items.find(item => item.id === selectedItem.id) || items[0];
   }
 } 

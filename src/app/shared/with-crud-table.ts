@@ -5,7 +5,7 @@ import { pipe, tap, map, switchMap, catchError, of } from "rxjs";
 
 import { NzNotificationService } from "ng-zorro-antd/notification";
 
-import { OrderBy, SortOrder } from "@pos/models";
+import { Filter, OrderBy, SortOrder } from "@pos/models";
 
 import { withCrudModalForm, IModalFormStore } from "./with-crud-modal-form";
 import { ICrudService } from "./crud-service";
@@ -26,7 +26,7 @@ export type CrudTableState<T> = {
   metadata: ItemMetadata<T>;
   orderBy: OrderBy<T>;
   pageSize: number;
-  searchText: string;
+  filters: {[key in keyof T]?: Filter};
   selectedItem: T | null;
   total: number;
 }
@@ -39,14 +39,14 @@ export interface ICrudTableStore<T> extends IModalFormStore<T> {
   metadata: () => ItemMetadata<T>;
   orderBy: () => OrderBy<T>;
   pageSize: () => number;
-  searchText: () => string;
   selectedItem: () => T;
   total: () => number;
   // Getters
-  setSearchText: (searchText: string) => void;
+  getFilters: () => {[key in keyof T]?: Filter};
   getSortOrder: (key: string) => SortOrder;
   // Setters
   setCurrentPage: (page: number) => void;
+  setFilters: (filters: {[key in keyof T]?: Filter}) => void;
   setMetadata: (metadata: ItemMetadata<T> | undefined) => void;
   setOrderBy: (key: string, order: SortOrder | null) => void;
   setPageSize: (size: number) => void;
@@ -68,7 +68,7 @@ export const withCrudTable = <T, D>(
     loadingTable: false,
     orderBy: {},
     pageSize: 20,
-    searchText: '',
+    filters: {},
     selectedItem: null,
     total: 0,
     metadata: {
@@ -97,12 +97,15 @@ export const withCrudTable = <T, D>(
         getItemLabel: (item: T) => {
           return item[store.metadata().nameField];
         },
+        getFilters: () => {
+          return store.filters();
+        },
         getSortOrder: (key: keyof T) => {
           return store.orderBy()[key] ?? null;
         },
         // Setters
-        setSearchText(searchText: string) {
-          patchState(store, { searchText, currentPage: 1 });
+        setFilters(filters: {[key in keyof T]?: Filter}) {
+          patchState(store, { filters });
           this.load();
         },
         setCurrentPage(page: number) {
@@ -167,7 +170,7 @@ export const withCrudTable = <T, D>(
             map(() => {
               const offset = (store.currentPage() - 1) * store.pageSize();
               return {
-                text: store.searchText(),
+                filter: store.filters(),
                 limit: store.pageSize(),
                 orderBy: store.orderBy(),
                 offset

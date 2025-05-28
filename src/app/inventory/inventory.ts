@@ -65,6 +65,7 @@ import { MODAL_FORM_STORE } from "../shared/with-crud-modal-form";
       [columns]="columns()"
       [metadata]="metadata()"
       [scroll]="{ y: 'calc(100vh - 15.7rem)' }"
+      (filterRemoved)="inventoryStore.setSearchText('')"
     />
 
     <ng-template #suffixIconButton>

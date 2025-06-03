@@ -7,7 +7,8 @@ export type SortOrder = 'ascend' | 'descend';
 export type OrderBy<T> = {[key in keyof T]?: SortOrder}
 
 export type FilterOperator = 'eq' | 'neq' | 'gt' | 'lt' | 'gte' | 'lte' | 'like';
-export type Filter = {op: FilterOperator, value: any}
+export type FilterCondition = {op: FilterOperator, value: any}
+export type Filter = FilterCondition | FilterCondition[];
 
 export interface PageParams<T> {
   filter?: {[key in keyof T]?: Filter};

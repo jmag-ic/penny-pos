@@ -1,4 +1,4 @@
-import { CatalogEntity, Page, PageParams, ProductDTO, ProductEntity, SaleDTO } from "../models";
+import { CatalogEntity, Page, PageParams, ProductDTO, ProductEntity, SaleDTO, SaleEntity } from "../models";
 
 export interface IAPI {
   searchProducts(pageParams: PageParams<ProductEntity>): Promise<Page<ProductDTO>>
@@ -7,4 +7,6 @@ export interface IAPI {
   deleteProduct(id: number): Promise<ProductDTO>
   checkout(saleDTO: Partial<SaleDTO>): Promise<SaleDTO>
   getCategories(): Promise<CatalogEntity[]>
+  searchSales(pageParams: PageParams<SaleEntity>): Promise<Page<SaleDTO>>
+  deleteSale(id: number): Promise<SaleDTO>
 }

@@ -4,6 +4,7 @@ import { InConstruction } from './shared/in-construction';
 
 import { CashRegister } from './cash-register';
 import { Inventory } from './inventory/inventory';
+import { Sales } from './sales/sales';
 
 export const routes: Routes = [
   {redirectTo: 'cash-register', path: '', pathMatch: 'full'},
@@ -27,7 +28,7 @@ export const routes: Routes = [
     }
   }, {
     path: 'sales',
-    component: InConstruction,
+    component: Sales,
     data: {
       breadcrumb: 'Ventas'
     }

@@ -27,9 +27,13 @@ export class QueryBuilder<T> {
 
   // where method sets the WHERE clause based on the provided condition and parameters
   where(where: string, ...params: any[]): QueryBuilder<T> {
-    this._where = this._where ? `${this._where} AND ${where}` : where
+    if (!where.trim()) {
+      return this;
+    }
+
+    this._where = this._where.trim() ? `${this._where} AND ${where}` : where
     this.params = this.params.concat(params)
-    return this
+    return this;
   }
 
   // orderBy method sets the ORDER BY clause
@@ -99,6 +103,10 @@ class QueryExecutor {
     return this.promiseOf(this.query, 'get', this.params).then(
       (row: T) => objectToCamelCase(row)
     );
+  }
+
+  toString(): string {
+    return `${this.query} ${this.params.map(param => `'${typeof param === 'string' ? param : JSON.stringify(param)}'`).join(', ')}`;
   }
 
   // promiseOf method is a helper method to wrap the callback-based SQLite methods into promises

@@ -89,7 +89,7 @@ export const utils = {
 
     // Build LIKE conditions for all the permutations and columns
     return {
-      likeClause: columns.map(column => texts.map(() => `${column} LIKE ?`).join(' OR ')).join(' OR '),
+      likeClause: columns.map(column => texts.map(() => `${objectToSnakeCase(column)} LIKE ?`).join(' OR ')).join(' OR '),
       params: columns.flatMap(() => texts)
     };
   }

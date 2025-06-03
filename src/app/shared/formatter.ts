@@ -1,5 +1,5 @@
 import { inject, Injectable, LOCALE_ID } from "@angular/core";
-import { formatNumber } from "@angular/common";
+import { formatDate, formatNumber } from "@angular/common";
 
 @Injectable({
   providedIn: 'root'
@@ -13,5 +13,9 @@ export class Formatter {
       return `$${formatNumber(value, this.locale, '1.2-2')}`;
     }
     return value;
+  }
+
+  dale(date: Date, format: string) {
+    return formatDate(date, format, this.locale);
   }
 }

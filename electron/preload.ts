@@ -1,7 +1,7 @@
 import { ipcRenderer } from "electron";
 import { contextBridge } from "electron";
 
-import { PageParams, ProductEntity, SaleDTO } from "../models";
+import { PageParams, ProductEntity, SaleDTO, SaleEntity } from "../models";
 
 import { IAPI } from "../api";
 
@@ -28,6 +28,14 @@ const api: IAPI = {
 
   getCategories: () => {
     return ipcRenderer.invoke('getCategories');
+  },
+
+  searchSales: (pageParams: PageParams<SaleEntity>) => {
+    return ipcRenderer.invoke('searchSales', pageParams);
+  },
+
+  deleteSale: (id: number) => {
+    return ipcRenderer.invoke('deleteSale', id);
   }
 }
 

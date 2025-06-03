@@ -1,5 +1,5 @@
 import { inject, Injectable } from "@angular/core";
-import { PageParams, ProductDTO, ProductEntity, Page, Filter } from "@pos/models";
+import { PageParams, ProductDTO, ProductEntity, Page } from "@pos/models";
 import { FormGroup } from "@angular/forms";
 import { map, Observable, tap } from "rxjs";
 import { ApiService } from "../api";

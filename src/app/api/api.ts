@@ -1,6 +1,6 @@
 import { Injectable } from "@angular/core";
 import { IAPI } from "@pos/api";
-import { PageParams, ProductEntity, Page, ProductDTO, SaleDTO } from "@pos/models";
+import { PageParams, ProductEntity, Page, ProductDTO, SaleDTO, SaleEntity } from "@pos/models";
 import { from, Observable } from "rxjs";
 
 const api = (<IAPI>((<any>window).api))
@@ -12,6 +12,14 @@ export class ApiService {
   
   checkout(saleDTO: Partial<SaleDTO>) {
     return api.checkout(saleDTO)
+  }
+
+  searchSales(pageParams: PageParams<SaleEntity>): Observable<Page<SaleDTO>> {
+    return from(api.searchSales(pageParams));
+  }
+
+  deleteSale(id: number) {
+    return api.deleteSale(id);
   }
 
   searchProducts(pageParams: PageParams<ProductEntity>): Observable<Page<ProductDTO>> {

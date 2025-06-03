@@ -1,5 +1,6 @@
+import { objectToSnakeCase } from "../utils";
 import { SqliteDb, Transactional, utils } from "../db";
-import { PageParams, Page, OrderBy, FilterOperator, Filter } from "../models";
+import { PageParams, Page, OrderBy, FilterOperator, Filter, FilterCondition } from "../models";
 
 type TableMetadata<T> = {
   table: string;
@@ -100,9 +101,11 @@ export abstract class Repository<T> {
     const itemsQuery = this.conn.query(this.metadata.table);
     const totalQuery = this.conn.query(this.metadata.table).columns('COUNT(*) total');
 
+    const filter = objectToSnakeCase(pageParams.filter);
+
     // Handle regular filters
     const { conditions: filterConditions, params: filterParams, likeFilters } = 
-      this.buildFilterConditions(pageParams.filter);
+      this.buildFilterConditions(filter);
 
     // Handle like conditions and FTS
     const { conditions: likeConditions, params: likeParams } = 
@@ -113,7 +116,8 @@ export abstract class Repository<T> {
     const allParams = [...filterParams, ...likeParams];
 
     if (allConditions.length > 0) {
-      const whereClause = `${allConditions.join(' AND ')}`;
+      // Remove empty conditions and join with AND
+      const whereClause = `${allConditions.filter(c => !!c.trim()).join(' AND ')}`;
       itemsQuery.where(whereClause, ...allParams);
       totalQuery.where(whereClause, ...allParams);
     }
@@ -140,19 +144,24 @@ export abstract class Repository<T> {
 
     Object.entries(filter).forEach(([column, filter]) => {
       if (!filter) return;
-      const { op, value } = filter as Filter;
+      // Handle both single condition and array of conditions
+      const filterConditions = Array.isArray(filter) ? filter : [filter];
 
-      if (op === 'like') {
-        const item = likeFilters.find(f => f.value === value);
-        if (item) {
-          item.columns.push(column);
-        } else {
-          likeFilters.push({ value, columns: [column] });
+      filterConditions.forEach((condition: FilterCondition) => {
+        const { op, value } = condition;
+
+        if (op === 'like') {
+          const item = likeFilters.find(f => f.value === value);
+          if (item) {
+            item.columns.push(column);
+          } else {
+            likeFilters.push({ value, columns: [column] });
+          }
+        } else if (sqlOpDict[op]) {
+          conditions.push(`${column} ${sqlOpDict[op]} ?`);
+          params.push(value);
         }
-      } else if (sqlOpDict[op]) {
-        conditions.push(`${column} ${sqlOpDict[op]} ?`);
-        params.push(value);
-      }
+      });
     });
 
     return { conditions, params, likeFilters };

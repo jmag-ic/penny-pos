@@ -79,14 +79,13 @@ export type AllowedOperations = {
         </tr>
       </thead>
       <tbody>
-        @for(item of store.items(); let i = $index; track i) {
+        @for(item of formattedItems(); let i = $index; track i) {
           <tr
             [class.selected]="store.selectedItem() === item"
             (click)="store.setSelectedItem(item)"
           >
             @for(column of columns(); let j = $index; track j) {
-              @let value = getColumnValue(item, column);
-              <td>{{ column.format ? column.format(value) : value }}</td>
+              <td>{{ item[column.key] }}</td>
             }
             <!-- Actions column -->
             @if(hasAnyOperation()) {
@@ -131,16 +130,28 @@ export class PosCrudTable<T extends Record<string, any>> implements OnInit {
 
   filters = computed(() => {
     const filters = this.store.getFilters()
-    return Object.entries(filters).filter(([_, value]) => value?.value).map(([key, value]) => ({
-      key,
-      label: this.columns().find(c => c.key === key)?.label ?? key,
-      value: value?.value
-    }));
+    return Object.entries(filters).filter(([_, value]) => value).map(([key, value]) => {
+      const conditions = Array.isArray(value) ? value : [value];
+      const values = conditions.map(c => c && typeof c === 'object' && 'value' in c ? c.value : '').filter(Boolean);
+      return {
+        key,
+        label: this.columns().find(c => c.key === key)?.label ?? key,
+        value: values.join(', ')
+      };
+    });
   });
 
   sorts = computed(() => Object.entries(this.store.orderBy())
     .map(([key, value]) => ({ key, label: this.columns().find(c => c.key === key)?.label ?? key, direction: value as 'ascend' | 'descend' }))
   );
+
+  formattedItems = computed(() => this.store.items().map(item => {
+    const newItem = {} as T;  
+    this.columns().map(column => {
+      newItem[column.key] = column.format ? column.format(item[column.key]) : item[column.key];
+    });
+    return newItem;
+  }));
 
   hasAnyOperation = computed(() => {
     const ops = this.allowedOperations();
@@ -191,20 +202,6 @@ export class PosCrudTable<T extends Record<string, any>> implements OnInit {
 
   onRemoveSort(key: string) {
     this.store.setOrderBy(key, null);
-  }
-
-  protected getColumnValue(item: T, column: Column<T>): any {
-    let value = item;
-    
-    const keys = (column.path ? column.path : column.key).toString().split('.');
-    for (const key of keys) {
-      if (!value) {
-        return '';
-      }
-      value = value[key];
-    }
-    
-    return column.format ? column.format(value) : value;
   }
 }
 

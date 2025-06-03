@@ -262,7 +262,7 @@ export const SalesStore = signalStore(
         try {
           const saleDTO: Partial<SaleDTO> = {
             items: store.currentSale().ticket.map(ticketItem => ({
-              itemId: ticketItem.product.id,
+              productId: ticketItem.product.id,
               quantity: ticketItem.quantity,
             } as SaleItemEntity)),
             paymentAmount,

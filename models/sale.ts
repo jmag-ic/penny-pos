@@ -1,5 +1,3 @@
-import { ProductEntity } from "./product";
-
 export interface SaleEntity {
   id: number;
   customerName: string;
@@ -12,7 +10,7 @@ export interface SaleEntity {
 export interface SaleItemEntity {
   id: number;
   saleId: number;
-  itemId: number;
+  productId: number;
   quantity: number;
   price: number;
   cost: number;

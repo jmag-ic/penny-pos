@@ -46,12 +46,12 @@ class Handlers {
   @Transactional()
   async checkout(saleDTO: SaleDTO) {
     // Get products data
-    const productIds = saleDTO.items.map(item => item.itemId);
+    const productIds = saleDTO.items.map(item => item.productId);
     const productsMap = await productRepo.getBulkMap(productIds);
 
     // Calculate total amount of the sale
     const totalAmount = saleDTO.items.reduce((acc, item) => {
-      const product = productsMap.get(item.itemId);
+      const product = productsMap.get(item.productId);
       if (!product) return acc;
       return acc + product.price * item.quantity;
     }, 0); 
@@ -64,10 +64,10 @@ class Handlers {
     });
 
     const saleItems = await Promise.all(saleDTO.items.map(item => {
-      const product = productsMap.get(item.itemId);
+      const product = productsMap.get(item.productId);
       return saleItemRepo.create({
         saleId: saleEntity.id,
-        itemId: item.itemId,
+        productId: item.productId,
         quantity: item.quantity,
         price: product?.price,
         cost: product?.cost
@@ -87,9 +87,15 @@ class Handlers {
   }
 
   // Sales API
+
   @Transactional()
-  async getSales() {
-    return saleRepo.getAll({saleDate: 'descend'});
+  async searchSales(pageParams: PageParams<SaleEntity>) {
+    return saleRepo.getPage(pageParams);
+  }
+
+  @Transactional()
+  async deleteSale(id: number) {
+    return saleRepo.delete(id);
   }
 }
 
@@ -104,7 +110,8 @@ export const loadHandlers = () => {
 
   // Sales API
   ipcMain.handle('checkout', (_, params: SaleDTO) => handlers.checkout(params));
-
+  ipcMain.handle('searchSales', (_, params: PageParams<SaleEntity>) => handlers.searchSales(params));
+  ipcMain.handle('deleteSale', (_, id: number) => handlers.deleteSale(id));
   // Catalogs API
   ipcMain.handle('getCategories', () => handlers.getCategories());
 };

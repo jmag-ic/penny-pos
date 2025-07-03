@@ -7,7 +7,7 @@ import { NzIconModule } from "ng-zorro-antd/icon";
 import { NzInputNumberModule } from 'ng-zorro-antd/input-number';
 import { NzListModule } from "ng-zorro-antd/list";
 
-import { SalesStore } from "./cash-register-store";
+import { CashRegisterStore } from "./cash-register-store";
 
 @Component({
   selector: "pos-ticket",
@@ -116,5 +116,5 @@ export class Ticket {
   @Input()
   @HostBinding('class') className: string = '';
 
-  protected readonly store = inject(SalesStore);
+  protected readonly store = inject(CashRegisterStore);
 }

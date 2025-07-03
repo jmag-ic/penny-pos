@@ -8,7 +8,7 @@ import { NzIconModule } from "ng-zorro-antd/icon";
 
 import { ProductEntity } from "@pos/models";
 import { HighlightWordsPipe } from "../shared/highlight-words-pipe";
-import { SalesStore } from "./cash-register-store";
+import { CashRegisterStore } from "./cash-register-store";
 
 @Component({
   imports: [NzIconModule, NzListModule, NzTagModule, DecimalPipe, HighlightWordsPipe],
@@ -77,7 +77,7 @@ export class ProductItem implements Highlightable {
   @ViewChild('containerRef') containerRef!: ElementRef;
 
   // Inject the cash register store
-  protected store = inject(SalesStore);
+  protected store = inject(CashRegisterStore);
 
   // Component state
   private _isActive: boolean = false;

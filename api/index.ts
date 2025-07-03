@@ -9,4 +9,5 @@ export interface IAPI {
   getCategories(): Promise<CatalogEntity[]>
   searchSales(pageParams: PageParams<SaleEntity>): Promise<Page<SaleDTO>>
   deleteSale(id: number): Promise<SaleDTO>
+  getSalesAmount(startDate: string, endDate: string): Promise<number>
 }

@@ -14,6 +14,7 @@ import { DisplayMode, ValdemortConfig, ValdemortModule } from 'ngx-valdemort';
 
 import { map } from 'rxjs';
 import { AppStore } from './app.store';
+import { TodaySales } from "./sales/today-sales";
 
 @Component({
   selector: 'app-root',
@@ -26,8 +27,9 @@ import { AppStore } from './app.store';
     NzIconModule,
     NzLayoutModule,
     NzMenuModule,
-    ValdemortModule
-  ],
+    ValdemortModule,
+    TodaySales
+],
   template: `
   <nz-layout>
     <nz-sider
@@ -69,7 +71,10 @@ import { AppStore } from './app.store';
           <!-- Top bar -->
           <div class="top-bar mb-3">
             <nz-breadcrumb [nzAutoGenerate]="true" />
-            <nz-avatar nzText="U" />
+            <div class="nav-actions">
+              <pos-today-sales />
+              <nz-avatar nzText="U" />
+            </div>
           </div>
 
           <!-- Router outlet -->
@@ -115,6 +120,12 @@ import { AppStore } from './app.store';
   .top-bar {
     display: flex;
     justify-content: space-between;
+  }
+
+  .nav-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
   }
   
   nz-avatar{

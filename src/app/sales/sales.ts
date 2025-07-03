@@ -55,6 +55,7 @@ const SALE_DATE_FORMAT = 'dd/MM/yyyy HH:mm';
       [metadata]="metadata()"
       [scroll]="{ y: 'calc(100vh - 15.7rem)' }"
       [allowedOperations]="{ create: false, update: false, delete: true }"
+      (filterRemoved)="salesStore.setDateRange(null)"
     />
 
     <nz-dropdown-menu #exportMenu="nzDropdownMenu">

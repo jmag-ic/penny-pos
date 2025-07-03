@@ -7,6 +7,7 @@ import { NzNotificationService } from 'ng-zorro-antd/notification';
 
 import { PageParams, ProductEntity, SaleDTO, SaleItemEntity } from '@pos/models';
 import { ApiService } from '../api';
+import { SalesStore } from '../sales/sales-store';
 
 export type LineItem = {
   product: ProductEntity;
@@ -49,7 +50,7 @@ const initialState: Sales = {
   showCheckoutModal: false
 };
 
-export const SalesStore = signalStore(
+export const CashRegisterStore = signalStore(
   { providedIn: 'root' },
 
   withState(initialState),
@@ -86,6 +87,8 @@ export const SalesStore = signalStore(
 
   // Methods that mutate the store state
   withMethods((store, api = inject(ApiService), notification = inject(NzNotificationService)) => {
+    const salesStore = inject(SalesStore);
+    
     /**
      * Helper: Update the currently selected sale.
      * We get the old sale, transform it, and produce a new sale object,
@@ -280,6 +283,9 @@ export const SalesStore = signalStore(
           if (store.sales().length === 0) {
             this.addSale();
           }
+
+          // Update the today's sales amount
+          salesStore.loadTodaySalesAmount();
           
           // Show a success 
           notification.create('success', 'Caja registradora', `Venta realizada correctamente`);

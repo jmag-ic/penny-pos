@@ -5,7 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { NzInputModule } from "ng-zorro-antd/input";
 import { NzModalModule } from 'ng-zorro-antd/modal';
 
-import { SalesStore } from "./cash-register-store";
+import { CashRegisterStore } from "./cash-register-store";
 
 @Component({
   selector: "pos-payment-modal",
@@ -62,7 +62,7 @@ import { SalesStore } from "./cash-register-store";
   `
 })
 export class PaymentModal {
-  protected readonly store = inject(SalesStore);
+  protected readonly store = inject(CashRegisterStore);
   protected paymentAmount = signal<number>(0);
   
   @ViewChild('paymentInput') paymentInput!: ElementRef;

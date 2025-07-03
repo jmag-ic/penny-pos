@@ -15,7 +15,7 @@ import { ProductItem } from "./product-item";
 import { InputCleaner } from "../shared/input-cleaner";
 import { InputDebouncer } from "../shared/input-debouncer";
 
-import { SalesStore } from "./cash-register-store";
+import { CashRegisterStore } from "./cash-register-store";
 
 @Component({
   selector: "pos-product-finder",
@@ -94,7 +94,7 @@ export class ProductFinder implements AfterViewInit, OnDestroy {
   searchInput!: ElementRef;
 
   // Inject the cash register store
-  protected readonly store = inject(SalesStore);
+  protected readonly store = inject(CashRegisterStore);
 
   // Key manager
   private keyManager!: ActiveDescendantKeyManager<ProductItem>; 

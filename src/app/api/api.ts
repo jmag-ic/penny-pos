@@ -9,7 +9,10 @@ const api = (<IAPI>((<any>window).api))
   providedIn: 'root'
 })
 export class ApiService {
-  
+  getSalesAmount(startDate: string, endDate: string): Promise<number> {
+    return api.getSalesAmount(startDate, endDate);
+  }
+
   checkout(saleDTO: Partial<SaleDTO>) {
     return api.checkout(saleDTO)
   }

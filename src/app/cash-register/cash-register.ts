@@ -10,7 +10,7 @@ import { ProductFinder } from "./product-finder";
 import { Ticket } from "./ticket";
 import { PaymentModal } from "./payment-modal";
 
-import { SalesStore } from "./cash-register-store";
+import { CashRegisterStore } from "./cash-register-store";
 
 @Component({
   selector: "pos-cash-register",
@@ -50,7 +50,7 @@ export class CashRegister extends CtrlCommander implements AfterViewInit {
   }
 
   // Inject the store
-  protected readonly store = inject(SalesStore);
+  protected readonly store = inject(CashRegisterStore);
 
   constructor() {
     super({

@@ -36,6 +36,10 @@ const api: IAPI = {
 
   deleteSale: (id: number) => {
     return ipcRenderer.invoke('deleteSale', id);
+  },
+
+  getSalesAmount: (startDate: string, endDate: string) => {
+    return ipcRenderer.invoke('getSalesAmount', startDate, endDate);
   }
 }
 

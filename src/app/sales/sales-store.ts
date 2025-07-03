@@ -3,43 +3,53 @@ import { SaleEntity, SaleDTO, Filter } from "@pos/models";
 
 import { SalesService } from "./sales-service";
 import { withCrudTable } from "../shared/with-crud-table";
+import { inject } from "@angular/core";
+import { ApiService } from "../api";
+import { datePlusDays, formatDate } from "@pos/utils/dates";
 
 export const SalesStore = signalStore(
   { providedIn: 'root' },
   withCrudTable<SaleEntity, SaleDTO>(SalesService),
   withState({
     dateRange: null as [Date | null, Date | null] | null,
+    todaySalesAmount: 0,
   }),
-  withMethods((store) => ({
-    setDateRange(range: [Date | null, Date | null] | null) {
-      const state = { dateRange: range, filters: {} };
+  withMethods((store) => {
+    const api = inject(ApiService);
 
-      if (range && range[0] && range[1]) {
-        // Set date range filter with multiple conditions
-        state.filters = {
-          saleDate: [
-            {
-              // format date to yyyy-mm-dd
-              value: range[0].toISOString().split('T')[0],
-              op: 'gte'
-            },
-            {
-              // Add one day to include the entire end date
-              value: new Date(range[1]?.getTime() + 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-              op: 'lt'
-            }
-          ]
-        };
-      } 
+    return {
+      setDateRange(range: [Date | null, Date | null] | null) {
+        const state = { dateRange: range, filters: {} };
 
-      patchState(store, state);
-      console.log("state", state);
-      store.load();
+        if (range && range[0] && range[1]) {
+          const startDate = formatDate(range[0]);
+          const endDate = formatDate(datePlusDays(range[1], 1));
+          state.filters = {
+            saleDate: [{
+                value: startDate,
+                op: 'gte'
+              }, {
+                value: endDate,
+                op: 'lt'
+            }]
+          };
+        } 
+
+        patchState(store, state);
+        store.load();
+      },
+      async loadTodaySalesAmount() {
+        const today = formatDate(new Date());
+        const tomorrow = formatDate(datePlusDays(new Date(), 1));
+        const todaySalesAmount = await api.getSalesAmount(today, tomorrow);
+        patchState(store, { todaySalesAmount });
+      }
     }
-  })),
+  }),
   withHooks({
     onInit: (store) => {
       store.load();
+      store.loadTodaySalesAmount();
     }
   })
 );

@@ -86,8 +86,13 @@ class Handlers {
     return categoryRepo.getAll({name: 'ascend'});
   }
 
-  // Sales API
 
+  // Sales API
+  @Transactional()
+  async getSalesAmount(startDate: string, endDate: string) {
+    return saleRepo.getSalesAmount(startDate, endDate);
+  }
+  
   @Transactional()
   async searchSales(pageParams: PageParams<SaleEntity>) {
     return saleRepo.getPage(pageParams);
@@ -112,6 +117,7 @@ export const loadHandlers = () => {
   ipcMain.handle('checkout', (_, params: SaleDTO) => handlers.checkout(params));
   ipcMain.handle('searchSales', (_, params: PageParams<SaleEntity>) => handlers.searchSales(params));
   ipcMain.handle('deleteSale', (_, id: number) => handlers.deleteSale(id));
+  ipcMain.handle('getSalesAmount', (_, startDate: string, endDate: string) => handlers.getSalesAmount(startDate, endDate));
   // Catalogs API
   ipcMain.handle('getCategories', () => handlers.getCategories());
 };

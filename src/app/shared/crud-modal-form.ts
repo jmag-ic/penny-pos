@@ -34,6 +34,7 @@ export type FormModalConfig = {
     },
     options?: ControlOption[],
     type: string | 'text' | 'number' | 'select' | 'date' | 'switch' | 'autocomplete',
+    transform?: (value: any) => any,
   } 
 }
 
@@ -184,7 +185,7 @@ export class PosCrudModalForm<T> {
       this.patchFormValue(this.store.formItem() as any);
     }
 
-    setTimeout(() => this.inputs.first.nativeElement.focus(), 0);
+    setTimeout(() => this.inputs.first?.nativeElement?.focus(), 0);
   }
 
   onCancel() {
@@ -245,7 +246,10 @@ export class PosCrudModalForm<T> {
       if (value.options) {
         patchedFormValue[key] = value.options?.find(option => option.value === formValue[key]);
       }
-    });    
+      if (value.transform) {
+        patchedFormValue[key] = value.transform(formValue[key]);
+      }
+    });
 
     this.formGroup().patchValue(patchedFormValue);
   }

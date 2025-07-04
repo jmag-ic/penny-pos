@@ -3,7 +3,7 @@ export interface SaleEntity {
   customerName: string;
   paymentAmount: number;
   paymentMethod: string;
-  saleDate: Date;
+  saleDate: string;
   totalAmount: number;
 }
 

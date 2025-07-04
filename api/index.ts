@@ -10,4 +10,5 @@ export interface IAPI {
   searchSales(pageParams: PageParams<SaleEntity>): Promise<Page<SaleDTO>>
   deleteSale(id: number): Promise<SaleDTO>
   getSalesAmount(startDate: string, endDate: string): Promise<number>
+  updateSale(sale: SaleEntity): Promise<SaleEntity>
 }

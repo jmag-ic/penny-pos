@@ -102,6 +102,16 @@ class Handlers {
   async deleteSale(id: number) {
     return saleRepo.delete(id);
   }
+
+  @Transactional()
+  async updateSale(sale: SaleEntity) {
+    // get the sale from the database
+    const saleDB = await saleRepo.getById(sale.id);
+    // preserve the total amount. It can't be changed unless the items are changed
+    sale.totalAmount = saleDB.totalAmount;
+    
+    return saleRepo.update(sale.id, sale);
+  }
 }
 
 const handlers = new Handlers();
@@ -118,6 +128,7 @@ export const loadHandlers = () => {
   ipcMain.handle('searchSales', (_, params: PageParams<SaleEntity>) => handlers.searchSales(params));
   ipcMain.handle('deleteSale', (_, id: number) => handlers.deleteSale(id));
   ipcMain.handle('getSalesAmount', (_, startDate: string, endDate: string) => handlers.getSalesAmount(startDate, endDate));
+  ipcMain.handle('updateSale', (_, params: SaleEntity) => handlers.updateSale(params));
   // Catalogs API
   ipcMain.handle('getCategories', () => handlers.getCategories());
 };

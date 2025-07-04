@@ -25,6 +25,10 @@ export class ApiService {
     return api.deleteSale(id);
   }
 
+  updateSale(sale: SaleEntity): Promise<SaleEntity> {
+    return api.updateSale(sale);
+  }
+
   searchProducts(pageParams: PageParams<ProductEntity>): Observable<Page<ProductDTO>> {
     return from(api.searchProducts(pageParams));
   }

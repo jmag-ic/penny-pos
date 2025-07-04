@@ -81,23 +81,23 @@ export type AllowedOperations = {
       <tbody>
         @for(item of formattedItems(); let i = $index; track i) {
           <tr
-            [class.selected]="store.selectedItem() === item"
-            (click)="store.setSelectedItem(item)"
+            [class.selected]="store.selectedItem() === item.raw"
+            (click)="store.setSelectedItem(item.raw)"
           >
             @for(column of columns(); let j = $index; track j) {
-              <td>{{ item[column.key] }}</td>
+              <td>{{ item.formatted[column.key] }}</td>
             }
             <!-- Actions column -->
             @if(hasAnyOperation()) {
               <td nzRight>
                 <div style="display: flex; justify-content: center; gap: 4px;">
                   @if(allowedOperations().update) {
-                    <button nz-button nzType="default" nzShape="circle" (click)="onEdit(item)">
+                    <button nz-button nzType="default" nzShape="circle" (click)="onEdit(item.raw)">
                       <i nz-icon nzType="edit" nzTheme="outline"></i>
                     </button>
                   }
                   @if(allowedOperations().delete) {
-                    <button nz-button nzType="default" nzShape="circle" nzDanger (click)="onDelete(item)">
+                    <button nz-button nzType="default" nzShape="circle" nzDanger (click)="onDelete(item.raw)">
                       <i nz-icon nzType="delete" nzTheme="outline"></i>
                     </button>
                   }
@@ -146,9 +146,9 @@ export class PosCrudTable<T extends Record<string, any>> implements OnInit {
   );
 
   formattedItems = computed(() => this.store.items().map(item => {
-    const newItem = {} as T;  
+    const newItem = {raw: item, formatted: {} as T};  
     this.columns().map(column => {
-      newItem[column.key] = column.format ? column.format(item[column.key]) : item[column.key];
+      newItem.formatted[column.key] = column.format ? column.format(item[column.key]) : item[column.key];
     });
     return newItem;
   }));

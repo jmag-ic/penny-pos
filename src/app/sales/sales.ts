@@ -1,5 +1,5 @@
 import { Component, computed, inject, OnInit } from "@angular/core";
-import { FormsModule } from "@angular/forms";
+import { FormsModule, Validators } from "@angular/forms";
 import { PosCrudTable } from "../shared/crud-table";
 import { NzDatePickerModule } from "ng-zorro-antd/date-picker";
 import { NzButtonModule } from "ng-zorro-antd/button";
@@ -11,6 +11,8 @@ import { CRUD_TABLE_STORE, ItemMetadata } from "../shared/with-crud-table";
 import { SalesStore } from "./sales-store";
 import { SaleDTO } from "@pos/models";
 import { Column } from "../shared/crud-table";
+import { PosCrudModalForm } from "../shared/crud-modal-form";
+import { MODAL_FORM_STORE } from "../shared/with-crud-modal-form";
 
 const SALE_DATE_FORMAT = 'dd/MM/yyyy HH:mm';
 
@@ -24,8 +26,9 @@ const SALE_DATE_FORMAT = 'dd/MM/yyyy HH:mm';
     NzButtonModule,
     NzIconModule,
     NzDropDownModule,
-    NzFormModule
-  ],
+    NzFormModule,
+    PosCrudModalForm
+],
   template: `
     <div style="display: flex; justify-content: space-between; align-items: center;" class="mb-3">
       <nz-range-picker
@@ -54,7 +57,7 @@ const SALE_DATE_FORMAT = 'dd/MM/yyyy HH:mm';
       [columns]="columns()"
       [metadata]="metadata()"
       [scroll]="{ y: 'calc(100vh - 15.7rem)' }"
-      [allowedOperations]="{ create: false, update: false, delete: true }"
+      [allowedOperations]="{ create: false, update: true, delete: true }"
       (filterRemoved)="salesStore.setDateRange(null)"
     />
 
@@ -70,9 +73,12 @@ const SALE_DATE_FORMAT = 'dd/MM/yyyy HH:mm';
         </li>
       </ul>
     </nz-dropdown-menu>
+
+    <pos-form-modal [config]="formConfig()" />
   `,
   providers: [
-    { provide: CRUD_TABLE_STORE, useExisting: SalesStore }
+    { provide: CRUD_TABLE_STORE, useExisting: SalesStore },
+    { provide: MODAL_FORM_STORE, useExisting: SalesStore }
   ],
 })
 export class Sales implements OnInit {
@@ -123,6 +129,30 @@ export class Sales implements OnInit {
     idField: 'id',
     nameField: 'customerName',
   } as ItemMetadata<SaleDTO>));
+
+  formConfig = computed(() => ({
+    saleDate: {
+      label: 'Fecha',
+      type: 'date',
+      control: ['', Validators.required],
+      transform: (value: string) => new Date(value)
+    },
+    customerName: {
+      label: 'Cliente',
+      type: 'string',
+      control: ['', Validators.required]
+    },
+    paymentMethod: {
+      label: 'Método de pago',
+      type: 'string',
+      control: ['', Validators.required]
+    },
+    paymentAmount: {
+      label: 'Pagado',
+      type: 'number',
+      control: ['', Validators.required]
+    },
+  }));
 
   ngOnInit() {
     // Set default order by sale date descending

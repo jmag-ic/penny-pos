@@ -40,6 +40,10 @@ const api: IAPI = {
 
   getSalesAmount: (startDate: string, endDate: string) => {
     return ipcRenderer.invoke('getSalesAmount', startDate, endDate);
+  },
+
+  updateSale: (sale: SaleEntity) => {
+    return ipcRenderer.invoke('updateSale', sale);
   }
 }
 

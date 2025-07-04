@@ -4,6 +4,7 @@ import { FormGroup } from "@angular/forms";
 import { Observable } from "rxjs";
 import { ApiService } from "../api";
 import { ICrudService } from "../shared/crud-service";
+import { formatDateTime } from "@pos/utils/dates";
 
 @Injectable({
   providedIn: 'root'
@@ -24,12 +25,14 @@ export class SalesService implements ICrudService<SaleEntity, SaleDTO> {
     throw new Error('Method not implemented.');
   }
 
-  update(_: SaleEntity): Promise<SaleDTO> {
-    throw new Error('Method not implemented.');
+  update(sale: SaleEntity): Promise<SaleDTO> {
+    return this.api.updateSale(sale) as Promise<SaleDTO>;
   }
 
-  getFormValue(_: SaleEntity | null, form: FormGroup): SaleEntity {
-    throw new Error('Method not implemented.');
+  getFormValue(sale: SaleEntity | null, form: FormGroup): SaleEntity {
+    const formValue = form.value
+    formValue.saleDate = formatDateTime(formValue.saleDate);
+    return { ...sale, ...formValue };
   }
 
   findItem(items: SaleEntity[], selectedItem: SaleEntity): SaleEntity {

@@ -15,7 +15,7 @@ export class SqliteDb {
     return this.db
   }
 
-  query<T>(tableName: string): QueryBuilder<T> {
+  table<T>(tableName: string): QueryBuilder<T> {
     return new QueryBuilder<T>(this.db, tableName)
   }
 
@@ -27,7 +27,7 @@ export class SqliteDb {
     return new Promise((resolve, reject) => {
       this.db.run(statement, params, function(this: RunResult, err: Error) {
         if (err) reject(err);
-        resolve((data[idColumn] as string | number) || this.lastID);
+        resolve((data[idColumn] as number | string) || this.lastID);
       });
     });
   }

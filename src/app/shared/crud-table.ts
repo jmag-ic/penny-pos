@@ -1,5 +1,6 @@
-import { Component, computed, inject, input, OnInit, output } from "@angular/core";
+import { Component, computed, inject, input, OnInit, output, Type } from "@angular/core";
 
+import { CommonModule } from "@angular/common";
 import { NzButtonModule } from "ng-zorro-antd/button";
 import { NzIconModule } from "ng-zorro-antd/icon";
 import { NzModalModule, NzModalService } from "ng-zorro-antd/modal";
@@ -22,9 +23,14 @@ export type AllowedOperations = {
   delete?: boolean;
 }
 
+export type ExpandConfig<T> = {
+  key: keyof T;
+  component: Type<any>;
+} | null;
+
 @Component({
   selector: 'pos-crud-table',
-  imports: [NzButtonModule, NzIconModule, NzModalModule, NzTableModule, PosTableFilters],
+  imports: [CommonModule, NzButtonModule, NzIconModule, NzModalModule, NzTableModule, PosTableFilters],
   template: `
     <ng-template #totalTemplate>
       <span>
@@ -58,6 +64,9 @@ export type AllowedOperations = {
     >
       <thead>
         <tr>
+          @if(expand()) {
+            <th nzWidth="50px"></th>
+          }
           @for(column of columns(); let i = $index; track i) {
             <th
               [nzWidth]="column.width ?? null"
@@ -84,6 +93,9 @@ export type AllowedOperations = {
             [class.selected]="store.selectedItem() === item.raw"
             (click)="store.setSelectedItem(item.raw)"
           >
+            @if(expand()) {
+              <td [nzExpand]="item.expanded" (nzExpandChange)="onExpandChange(item)"></td>
+            }
             @for(column of columns(); let j = $index; track j) {
               <td>{{ item.formatted[column.key] }}</td>
             }
@@ -105,6 +117,13 @@ export type AllowedOperations = {
               </td>
             }
           </tr>
+          @if(item.expanded) {
+          <tr [nzExpand]="item.expanded">
+            <td [attr.colspan]="columns().length + (hasAnyOperation() ? 1 : 0) + (expand() ? 1 : 0)" class="expandable-cell">
+              <ng-container *ngComponentOutlet="expand()!.component!; inputs: { items: getExpandItems(item) }"></ng-container>
+            </td>
+          </tr>
+          }
         }
       </tbody>
     </nz-table>
@@ -113,6 +132,11 @@ export type AllowedOperations = {
     .selected {
       background-color: #bae7ff !important;
     }
+    
+    .expandable-cell {
+      padding: 0 !important;
+      margin: 0 !important;
+    }
   `
 })
 export class PosCrudTable<T extends Record<string, any>> implements OnInit {
@@ -120,6 +144,7 @@ export class PosCrudTable<T extends Record<string, any>> implements OnInit {
   columns = input<Column<T>[]>([]);
   scroll = input<{ x?: string | null, y?: string | null }>({ x: null, y: null });
   metadata = input<ItemMetadata<T>>();
+  expand = input<ExpandConfig<T>|null>(null);
   filterRemoved = output<string>();
 
   allowedOperations = input<AllowedOperations>({ 
@@ -146,7 +171,7 @@ export class PosCrudTable<T extends Record<string, any>> implements OnInit {
   );
 
   formattedItems = computed(() => this.store.items().map(item => {
-    const newItem = {raw: item, formatted: {} as T};  
+    const newItem = {raw: item, formatted: {} as T, expanded: false};  
     this.columns().map(column => {
       newItem.formatted[column.key] = column.format ? column.format(item[column.key]) : item[column.key];
     });
@@ -202,6 +227,18 @@ export class PosCrudTable<T extends Record<string, any>> implements OnInit {
 
   onRemoveSort(key: string) {
     this.store.setOrderBy(key, null);
+  }
+
+  onExpandChange(item: { expanded: boolean; raw: T }) {
+    // collapse expanded
+    this.formattedItems().forEach(i => i.expanded = false);
+    // expand the current row
+    item.expanded = !item.expanded;
+  }
+
+  getExpandItems(item: { raw: T }) {
+    const expandKey = this.expand()?.key;
+    return expandKey ? (item.raw[expandKey] as any[]) || [] : [];
   }
 }
 

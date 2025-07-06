@@ -8,7 +8,7 @@ export class SaleRepository extends Repository<SaleEntity> {
   }
 
   async getSalesAmount(startDate: string, endDate: string) {
-    const query = this.conn.query('sale')
+    const query = this.conn.table('sale')
       .columns('SUM(total_amount) as total_amount')
       .where('sale_date BETWEEN ? AND ?', startDate, endDate)
       .build();

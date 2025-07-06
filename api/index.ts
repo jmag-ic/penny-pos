@@ -5,10 +5,11 @@ export interface IAPI {
   createProduct(product: ProductEntity): Promise<ProductDTO>
   updateProduct(product: ProductEntity): Promise<ProductDTO>
   deleteProduct(id: number): Promise<ProductDTO>
+  getProductsBulk(ids: number[]): Promise<ProductDTO[]>
   checkout(saleDTO: Partial<SaleDTO>): Promise<SaleDTO>
   getCategories(): Promise<CatalogEntity[]>
   searchSales(pageParams: PageParams<SaleEntity>): Promise<Page<SaleDTO>>
   deleteSale(id: number): Promise<SaleDTO>
   getSalesAmount(startDate: string, endDate: string): Promise<number>
-  updateSale(sale: SaleEntity): Promise<SaleEntity>
+  updateSale(sale: SaleEntity): Promise<SaleDTO>
 }

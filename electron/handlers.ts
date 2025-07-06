@@ -1,6 +1,6 @@
 import { ipcMain } from "electron";
 import { DatabaseManager, Transactional } from "../db";
-import { ProductEntity, PageParams, SaleDTO, SaleEntity } from "../models";
+import { ProductEntity, PageParams, SaleDTO, SaleEntity, SaleItemEntity } from "../models";
 import { ProductRepository, CategoryRepository, SaleRepository, SaleItemRepository } from "../repository";
 
 // Create repository instances using the singleton database connection
@@ -94,8 +94,13 @@ class Handlers {
   }
   
   @Transactional()
-  async searchSales(pageParams: PageParams<SaleEntity>) {
-    return saleRepo.getPage(pageParams);
+  async searchSales(pageParams: PageParams<SaleDTO>) {
+    const salesPage = await saleRepo.getPage(pageParams);
+    const sales = await saleRepo.loadBackwardRelated<SaleItemEntity, SaleDTO>(saleItemRepo, salesPage.items, 'saleId', 'items');
+    return {
+      ...salesPage,
+      items: sales
+    };
   }
 
   @Transactional()
@@ -112,6 +117,11 @@ class Handlers {
     
     return saleRepo.update(sale.id, sale);
   }
+
+  @Transactional()
+  async getProductsBulk(ids: number[]) {
+    return productRepo.getBulk(ids);
+  }
 }
 
 const handlers = new Handlers();
@@ -122,6 +132,7 @@ export const loadHandlers = () => {
   ipcMain.handle('createProduct', (_, params: ProductEntity) => handlers.createProduct(params));
   ipcMain.handle('updateProduct', (_, params: ProductEntity) => handlers.updateProduct(params));
   ipcMain.handle('deleteProduct', (_, id: number) => handlers.deleteProduct(id));
+  ipcMain.handle('getProductsBulk', (_, ids: number[]) => handlers.getProductsBulk(ids));
 
   // Sales API
   ipcMain.handle('checkout', (_, params: SaleDTO) => handlers.checkout(params));

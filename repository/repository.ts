@@ -1,4 +1,4 @@
-import { objectToSnakeCase } from "../utils";
+import { objectToSnakeCase, toSnakeCase } from "../utils";
 import { SqliteDb, Transactional, utils } from "../db";
 import { PageParams, Page, OrderBy, FilterOperator, Filter, FilterCondition } from "../models";
 
@@ -47,7 +47,7 @@ export abstract class Repository<T> {
   }
 
   getAll(orderBy?: OrderBy<T>): Promise<T[]> {
-    const query = this.conn.query(this.metadata.table);
+    const query = this.conn.table(this.metadata.table);
     if (orderBy) {
       query.orderBy(orderBy)
     }
@@ -55,41 +55,45 @@ export abstract class Repository<T> {
   }
 
   getById(id: number | string): Promise<T> {
-    return this.conn.query(this.metadata.table)
+    return this.conn.table(this.metadata.table)
       .where(`${this.metadata.idColumn as string} = ?`, id)
       .build()
       .get();
   }
 
-  getBulk(ids: (string | number)[]): Promise<T[]> {
+  getBulk(ids: (number | string)[]): Promise<T[]> {
     ids = Array.from(new Set(ids.map(id => String(id))));
     const placeholders = ids.map(() => '?').join(',');
 
-    return this.conn.query(this.metadata.table)
+    return this.conn.table(this.metadata.table)
       .where(`${this.metadata.idColumn as string} IN (${placeholders})`, ...ids)
       .build()
       .all();
   }
 
-  async getBulkMap(ids: (string | number)[]): Promise<Map<string | number, T>> {
+  async getBulkMap(ids: (number | string)[]): Promise<Map<number | string, T>> {
     const entities = await this.getBulk(ids);
     return new Map(entities.map(entity => [this.getId(entity), entity]));
   }
 
-  async loadRelated<R, D>(repository: Repository<R>, entities: T[], foreignKey: keyof T, relatedKey: keyof D): Promise<D[]> {
-    const relationMap = await this.getRelated(repository, entities, foreignKey);
-    return entities.map(entity => {
-      return {
-        ...entity,
-        [relatedKey]: relationMap.get(entity[foreignKey] as string | number)
-      } as D;
-    });
+  async getBackwardRelated<R>(repository: Repository<R>, items: T[], foreignKey: keyof R): Promise<Map<number | string, R[]>> {
+    let ids = items.map(item => this.getId(item))
+      .filter(id => id != null)
+      .map(id => id);
+        
+    if (ids.length === 0) return new Map();
+
+    const placeholders = Array.from(new Set(ids.map(id => String(id)))).map(() => '?').join(',');
+    const fkColumn = toSnakeCase(foreignKey as string);
+    const relatedEntities = await repository.where(`${fkColumn} IN (${placeholders})`, ids);
+
+    return new Map(ids.map(id => [id, relatedEntities.filter(rel => rel[foreignKey] == id)]));
   }
 
-  async getRelated<R>(repository: Repository<R>, items: T[], foreignKey: keyof T): Promise<Map<string | number, R>> {
+  async getRelated<R>(repository: Repository<R>, items: T[], foreignKey: keyof T): Promise<Map<number | string, R>> {
     const ids = items.map(item => item[foreignKey])
       .filter(id => id != null)
-      .map(id => id as string | number);
+      .map(id => id as number | string);
     
     if (ids.length === 0) return new Map();
     
@@ -98,8 +102,8 @@ export abstract class Repository<T> {
 
   @Transactional()
   async getPage(pageParams: PageParams<T>): Promise<Page<T>> {
-    const itemsQuery = this.conn.query(this.metadata.table);
-    const totalQuery = this.conn.query(this.metadata.table).columns('COUNT(*) total');
+    const itemsQuery = this.conn.table(this.metadata.table);
+    const totalQuery = this.conn.table(this.metadata.table).columns('COUNT(*) total');
 
     const filter = objectToSnakeCase(pageParams.filter);
 
@@ -129,6 +133,33 @@ export abstract class Repository<T> {
       items: await itemsQuery.build().all<T>(),
       total: (await totalQuery.build().get<{ total: number }>()).total
     };
+  }
+
+  async loadBackwardRelated<R, D>(repository: Repository<R>, entities: T[], foreignKey: keyof R, relatedKey: keyof D): Promise<D[]> {
+    const relationMap = await this.getBackwardRelated(repository, entities, foreignKey);
+    return entities.map(entity => {
+      return {
+        ...entity,
+        [relatedKey]: relationMap.get(this.getId(entity))
+      } as D;
+    });
+  }
+
+  async loadRelated<R, D>(repository: Repository<R>, entities: T[], foreignKey: keyof T, relatedKey: keyof D): Promise<D[]> {
+    const relationMap = await this.getRelated(repository, entities, foreignKey);
+    return entities.map(entity => {
+      return {
+        ...entity,
+        [relatedKey]: relationMap.get(entity[foreignKey] as number | string)
+      } as D;
+    });
+  }
+
+  where(where: string, params: any[]): Promise<T[]> {
+    return this.conn.table(this.metadata.table)
+      .where(where, ...params)
+      .build()
+      .all()
   }
 
   private buildFilterConditions(filter: { [key in keyof T]?: Filter | undefined } | undefined): { 

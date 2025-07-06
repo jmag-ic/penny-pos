@@ -13,6 +13,7 @@ import { SaleDTO } from "@pos/models";
 import { Column } from "../shared/crud-table";
 import { PosCrudModalForm } from "../shared/crud-modal-form";
 import { MODAL_FORM_STORE } from "../shared/with-crud-modal-form";
+import { SaleItemsTable } from "./sale-items-table";
 
 const SALE_DATE_FORMAT = 'dd/MM/yyyy HH:mm';
 
@@ -27,7 +28,7 @@ const SALE_DATE_FORMAT = 'dd/MM/yyyy HH:mm';
     NzIconModule,
     NzDropDownModule,
     NzFormModule,
-    PosCrudModalForm
+    PosCrudModalForm,
 ],
   template: `
     <div style="display: flex; justify-content: space-between; align-items: center;" class="mb-3">
@@ -58,6 +59,7 @@ const SALE_DATE_FORMAT = 'dd/MM/yyyy HH:mm';
       [metadata]="metadata()"
       [scroll]="{ y: 'calc(100vh - 15.7rem)' }"
       [allowedOperations]="{ create: false, update: true, delete: true }"
+      [expand]="expandConfig"
       (filterRemoved)="salesStore.setDateRange(null)"
     />
 
@@ -153,6 +155,11 @@ export class Sales implements OnInit {
       control: ['', Validators.required]
     },
   }));
+
+  expandConfig = {
+    key: 'items' as keyof SaleDTO,
+    component: SaleItemsTable
+  };
 
   ngOnInit() {
     // Set default order by sale date descending

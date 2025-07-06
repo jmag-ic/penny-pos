@@ -45,6 +45,10 @@ export class ApiService {
     return api.deleteProduct(id);
   }
 
+  getProductsBulk(ids: number[]) {
+    return api.getProductsBulk(ids);
+  }
+
   getCategories() {
     return api.getCategories();
   }

@@ -44,6 +44,10 @@ const api: IAPI = {
 
   updateSale: (sale: SaleEntity) => {
     return ipcRenderer.invoke('updateSale', sale);
+  },
+
+  getProductsBulk: (ids: number[]) => {
+    return ipcRenderer.invoke('getProductsBulk', ids);
   }
 }
 

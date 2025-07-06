@@ -230,10 +230,10 @@ export class PosCrudTable<T extends Record<string, any>> implements OnInit {
   }
 
   onExpandChange(item: { expanded: boolean; raw: T }) {
-    // collapse expanded
-    this.formattedItems().forEach(i => i.expanded = false);
     // expand the current row
     item.expanded = !item.expanded;
+    // collapse expanded
+    this.formattedItems().filter(i => i.raw !== item.raw).forEach(i => i.expanded = false);
   }
 
   getExpandItems(item: { raw: T }) {

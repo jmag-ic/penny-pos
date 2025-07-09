@@ -1,11 +1,11 @@
 import { computed, inject } from '@angular/core';
 import { patchState, signalStore, withComputed, withMethods, withState } from '@ngrx/signals';
 import { rxMethod } from '@ngrx/signals/rxjs-interop';
-import { catchError, filter, map, of, pipe, switchMap, tap } from 'rxjs';
+import { catchError, filter, Observable, of, pipe, switchMap, tap } from 'rxjs';
 
 import { NzNotificationService } from 'ng-zorro-antd/notification';
 
-import { PageParams, ProductEntity, SaleDTO, SaleItemEntity } from '@pos/models';
+import { Page, PageParams, ProductDTO, ProductEntity, SaleDTO, SaleItemEntity } from '@pos/models';
 import { ApiService } from '../api';
 import { SalesStore } from '../sales/sales-store';
 
@@ -309,30 +309,33 @@ export const CashRegisterStore = signalStore(
       
       searchProducts: rxMethod<string>(
         pipe(
-          map(searchText => searchText.trim()),
-          filter(searchText => searchText !== store.currentSale().searchText),
-          tap(searchText => updateCurrentSale((sale) => ({
+          filter(searchText => searchText.trim() !== store.currentSale().searchText.trim()),
+          tap(() => updateCurrentSale((sale) => ({
             ...sale,
             searching: true,
-            searchText: searchText,
           }))),
           switchMap(searchText => {
-            if (!searchText) {
-              return of({items: [], total: 0});
+            let result: Observable<Page<ProductDTO>> = of({items: [], total: 0});
+
+            if (searchText && searchText.length > 3) {
+              result = api.searchProducts(buildPageParams(searchText)).pipe(
+                catchError((error: Error) => {
+                  console.error('Error searching products:', error);
+                  notification.error('Error al buscar productos', `${error.message}`, { nzDuration: 0 });
+                  return of({items: [], total: 0});
+                })
+              );
             }
-            return api.searchProducts(buildPageParams(searchText)).pipe(
-              catchError((error: Error) => {
-                console.error('Error searching products:', error);
-                notification.error('Error al buscar productos', `${error.message}`, { nzDuration: 0 });
-                return of({items: [], total: 0});
-              })
+
+            return result.pipe(
+              tap(page => updateCurrentSale((sale) => ({
+                ...sale,
+                products: page.items,
+                searching: false,
+                searchText: searchText,
+              })))
             );
           }),
-          tap(page => updateCurrentSale((sale) => ({
-            ...sale,
-            products: page.items,
-            searching: false,
-          })))
         )
       ),
 

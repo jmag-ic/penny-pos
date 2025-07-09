@@ -33,7 +33,7 @@ import { MODAL_FORM_STORE } from "../shared/with-crud-modal-form";
   ],
   template: `
     <div style="display: flex; justify-content: space-between;" class="mb-3">
-    <nz-input-group nzSearch [nzAddOnAfter]="suffixIconButton" style="width: 50%;">
+      <nz-input-group nzSearch [nzAddOnAfter]="suffixIconButton" style="width: 50%;">
         <input
           #searchInput
           type="text"
@@ -71,6 +71,15 @@ import { MODAL_FORM_STORE } from "../shared/with-crud-modal-form";
     <ng-template #suffixIconButton>
       <button nz-button nzType="primary" nzSearch>
         <span nz-icon nzType="search"></span>
+      </button>
+      <button 
+        nz-button 
+        nzType="default" 
+        [disabled]="!inventoryStore.searchText()"
+        (click)="clearSearch()"
+        class="ml-1"
+      >
+        <span nz-icon nzType="close"></span>
       </button>
     </ng-template>
 
@@ -192,5 +201,10 @@ export class Inventory extends CtrlCommander implements OnInit {
 
   ngOnInit() {
     this.inventoryStore.load();
+  }
+
+  clearSearch() {
+    this.inventoryStore.setSearchText('');
+    this.searchInput.nativeElement.focus();
   }
 }

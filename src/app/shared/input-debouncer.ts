@@ -6,8 +6,7 @@ import { debounce, distinctUntilChanged, fromEvent, interval, map, Subscription 
 })
 export class InputDebouncer implements OnDestroy {
   // Inputs
-  readonly debounceTime = input<number>(400);
-  readonly textLength = input<number>(3);
+  readonly debounceTime = input<number>(300);
 
   // Outputs
   readonly textChanged = output<string>();
@@ -19,11 +18,9 @@ export class InputDebouncer implements OnDestroy {
     // Create a subscription to the keyup event.
     this.keyUpSub = fromEvent(input.nativeElement,'keyup').pipe(
       // Get the value of the input element and trim it
-      map(event => ((<KeyboardEvent>event).target as HTMLInputElement).value.trim()),
-      // If the text is less than 3 characters, emit an empty string
-      map((text: string) => text.length >= this.textLength() ? text : ''),
+      map(event => ((<KeyboardEvent>event).target as HTMLInputElement).value),
       // Debounce the emission if the text is not empty
-      debounce(text => interval(text ? this.debounceTime(): 0)),
+      debounce(() => interval(this.debounceTime())),
       // Only emit the text if it is different from the previous one
       distinctUntilChanged()
     ).subscribe(text => this.textChanged.emit(text));

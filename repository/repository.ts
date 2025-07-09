@@ -212,8 +212,9 @@ export abstract class Repository<T> {
       conditions.push(likeClause);
       params.push(..._params);
 
-      if (this.metadata.ftsTable && !matchValues.find(v => v === f.value)) {
-        matchValues.push(f.value.includes(' ') ? `${f.value.split(' ').join('* ')}*` : `${f.value}*`);
+      const trimmedValue = f.value.trim();
+      if (this.metadata.ftsTable && !matchValues.find(v => v.trim() === trimmedValue)) {
+        matchValues.push(trimmedValue.includes(' ') ? `${trimmedValue.split(' ').join('* ')}*` : `${trimmedValue}*`);
       }
     });
 

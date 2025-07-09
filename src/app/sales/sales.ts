@@ -35,7 +35,7 @@ const SALE_DATE_FORMAT = 'dd/MM/yyyy HH:mm';
       <nz-range-picker
         style="width: 300px;"
         [nzShowTime]="false"
-        [nzFormat]="'dd/MM/yyyy'"
+        [nzFormat]="'dd-MMM-yyyy'"
         [nzPlaceHolder]="['Fecha inicio', 'Fecha fin']"
         [ngModel]="salesStore.dateRange()"
         (ngModelChange)="onDateRangeChange($event)"
@@ -103,7 +103,7 @@ export class Sales implements OnInit {
       key: 'saleDate',
       label: 'Fecha',
       width: '150px',
-      format: (v) => this.formatter.dale(v, SALE_DATE_FORMAT)
+      format: (v) => this.formatter.strToLocaleDate(v, SALE_DATE_FORMAT)
     }, {
       key: 'customerName',
       label: 'Cliente',

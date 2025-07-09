@@ -107,7 +107,7 @@ export type FormModalConfig = {
                     </nz-select>
                   }
                   @case ('date') {
-                    <nz-date-picker #inputs [formControlName]="fieldName" />
+                    <nz-date-picker #inputs [formControlName]="fieldName" [nzFormat]="'dd-MMM-yyyy'" />
                   }
                   @case ('switch') {
                     <nz-switch #inputs [formControlName]="fieldName" />

@@ -21,7 +21,8 @@ export class TodaySales {
   router = inject(Router);
   onButtonClick() {
     // Set the date range to today
-    this.store.setDateRange([new Date(), datePlusDays(new Date(), 1)]);
+    const today = new Date();
+    this.store.setDateRange([today, today]);
     this.router.navigate(['/sales']);
   }
 }

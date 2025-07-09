@@ -4,7 +4,7 @@ import { FormGroup } from "@angular/forms";
 import { Observable } from "rxjs";
 import { ApiService } from "../api";
 import { ICrudService } from "../shared/crud-service";
-import { formatDateTime } from "@pos/utils/dates";
+import { getStrDateTime } from "@pos/utils/dates";
 
 @Injectable({
   providedIn: 'root'
@@ -31,8 +31,16 @@ export class SalesService implements ICrudService<SaleEntity, SaleDTO> {
 
   getFormValue(sale: SaleEntity | null, form: FormGroup): SaleEntity {
     const formValue = form.value
-    formValue.saleDate = formatDateTime(formValue.saleDate);
-    return { ...sale, ...formValue };
+    formValue.saleDate = getStrDateTime(formValue.saleDate);
+    return { 
+      id: sale?.id,
+      customerName: formValue.customerName,
+      paymentAmount: formValue.paymentAmount,
+      paymentMethod: formValue.paymentMethod,
+      saleDate: sale?.saleDate,
+      totalAmount: sale?.totalAmount,
+      ...formValue
+    };
   }
 
   findItem(items: SaleEntity[], selectedItem: SaleEntity): SaleEntity {

@@ -15,7 +15,11 @@ export class Formatter {
     return value;
   }
 
-  dale(date: Date, format: string) {
+  strToLocaleDate(strDate: string, format: string) {
+    return this.toLocaleDate(new Date(strDate), format);
+  }
+
+  toLocaleDate(date: Date, format: string) {
     return formatDate(date, format, this.locale);
   }
 }

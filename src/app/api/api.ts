@@ -1,7 +1,8 @@
 import { Injectable } from "@angular/core";
 import { IAPI } from "@pos/api";
 import { PageParams, ProductEntity, Page, ProductDTO, SaleDTO, SaleEntity } from "@pos/models";
-import { from, Observable } from "rxjs";
+import { toISOString } from "@pos/utils/dates";
+import { from, map, Observable } from "rxjs";
 
 const api = (<IAPI>((<any>window).api))
 
@@ -18,7 +19,12 @@ export class ApiService {
   }
 
   searchSales(pageParams: PageParams<SaleEntity>): Observable<Page<SaleDTO>> {
-    return from(api.searchSales(pageParams));
+    return from(api.searchSales(pageParams)).pipe(
+      map((page: Page<SaleDTO>) => pageItemsMap(page, (item: SaleDTO) => ({
+        ...item,
+        saleDate: toISOString(item.saleDate)
+      })))
+    );
   }
 
   deleteSale(id: number) {
@@ -51,5 +57,15 @@ export class ApiService {
 
   getCategories() {
     return api.getCategories();
+  }
+}
+
+function pageItemsMap<T>(page: Page<T>, mapper: (item: T) => T) {
+  return {
+    ...page,
+    items: page.items.map((item: T) => ({
+      ...item,
+      ...mapper(item)
+    }))
   }
 }

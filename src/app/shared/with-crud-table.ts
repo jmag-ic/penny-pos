@@ -27,6 +27,7 @@ export type CrudTableState<T> = {
   orderBy: OrderBy<T>;
   pageSize: number;
   filters: {[key in keyof T]?: Filter};
+  displayFilters: { [key in keyof T]?: Filter };
   selectedItem: T | null;
   total: number;
 }
@@ -43,6 +44,7 @@ export interface ICrudTableStore<T> extends IModalFormStore<T> {
   total: () => number;
   // Getters
   getFilters: () => {[key in keyof T]?: Filter};
+  getDisplayFilters: () => {[key in keyof T]?: Filter};
   getSortOrder: (key: string) => SortOrder;
   // Setters
   setCurrentPage: (page: number) => void;
@@ -69,6 +71,7 @@ export const withCrudTable = <T, D>(
     orderBy: {},
     pageSize: 20,
     filters: {},
+    displayFilters: {},
     selectedItem: null,
     total: 0,
     metadata: {
@@ -99,6 +102,9 @@ export const withCrudTable = <T, D>(
         },
         getFilters: () => {
           return store.filters();
+        },
+        getDisplayFilters: () => {
+          return store.displayFilters();
         },
         getSortOrder: (key: keyof T) => {
           return store.orderBy()[key] ?? null;

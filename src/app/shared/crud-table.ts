@@ -154,7 +154,7 @@ export class PosCrudTable<T extends Record<string, any>> implements OnInit {
   });
 
   filters = computed(() => {
-    const filters = this.store.getFilters()
+    const filters = this.store.getDisplayFilters() || this.store.getFilters()
     return Object.entries(filters).filter(([_, value]) => value).map(([key, value]) => {
       const conditions = Array.isArray(value) ? value : [value];
       const values = conditions.map(c => c && typeof c === 'object' && 'value' in c ? c.value : '').filter(Boolean);

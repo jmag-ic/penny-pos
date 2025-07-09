@@ -15,32 +15,24 @@ import { CashRegisterStore } from "./cash-register-store";
   template: `
     <div class="table-container">
       <table class="full-w">
-        <thead>
+        <tr>
+          <th colspan="5">
+            Ticket de Venta {{ store.currentSale().id }} : {{ store.currentSale().date | date:'hh:mm:ss a' }}
+          </th>
+        </tr>
+        @for(lineItem of store.currentSale().ticket; track lineItem.product.id) {
           <tr>
-            <th colspan=5 style="display: flex; justify-content: space-between;">
-              <span></span>
-              <span>Ticket de Venta {{ store.currentSale().id }}</span>
-              <span>{{ store.currentSale().date | date:'hh:mm:ss a' }}</span>
-            </th>
+            <td>
+              <nz-icon class="delete-icon" nzType="delete" nzTheme="outline" (click)="store.removeLineItem(lineItem.product)"/>
+            </td>
+            <td class="full-w">{{ lineItem.product.name }}</td>
+            <td>\${{ lineItem.price | number:'1.2-2' }}</td>
+            <td>
+              <span style="display: flex; align-items: center;"><span class="mr-1">x</span><nz-input-number [ngModel]="lineItem.quantity" (ngModelChange)="store.updateLineItem(lineItem.product, $event)" /></span>
+            </td>
+            <td class="border-l">\${{ lineItem.total | number:'1.2-2' }}</td>
           </tr>
-        </thead>
-        <tbody>
-          @for(lineItem of store.currentSale().ticket; track lineItem.product.id) {
-            <tr>
-              <td>
-                <nz-icon class="delete-icon" nzType="delete" nzTheme="outline" (click)="store.removeLineItem(lineItem.product)"/>
-              </td>
-              <td class="full-w">{{ lineItem.product.name }}</td>
-              <td>\${{ lineItem.price | number:'1.2-2' }}</td>
-              <td class="quantity">
-                <!-- <div class="quantity"> -->
-                  <span class="mr-1">x</span><nz-input-number [ngModel]="lineItem.quantity" (ngModelChange)="store.updateLineItem(lineItem.product, $event)" />
-                <!-- </div> -->
-              </td>
-              <td class="border-l">\${{ lineItem.total | number:'1.2-2' }}</td>
-            </tr>
-          }
-        </tbody>
+        }
       </table>
     </div>
     

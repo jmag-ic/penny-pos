@@ -14,25 +14,29 @@ export const SalesStore = signalStore(
   withState({
     dateRange: null as [Date | null, Date | null] | null,
     todaySalesAmount: 0,
+    selectedRangeAmount: 0,
   }),
   withMethods((store) => {
     const api = inject(ApiService);
     const formatter = inject(Formatter);
 
     return {
-      setDateRange(range: [Date | null, Date | null] | null) {
-        const state = { dateRange: range, filters: {}, displayFilters: {} };
+      async setDateRange(range: [Date | null, Date | null] | null) {
+        const state = { dateRange: range, filters: {}, displayFilters: {}, selectedRangeAmount: 0 };
 
         if (range && range[0] && range[1]) {
 
           // Set the filters for the API
           // The API expects the date to be in the format YYYY-MM-DD HH:MM:SS
+          const start = getStrDateTime(range[0]);
+          const end = getStrDateTime(datePlusDays(range[1], 1));
+
           state.filters = {
             saleDate: [{
-                value: getStrDateTime(range[0]),
+                value: start,
                 op: 'gte'
               }, {
-                value: getStrDateTime(datePlusDays(range[1], 1)),
+                value: end,
                 op: 'lt'
             }]
           };
@@ -48,17 +52,20 @@ export const SalesStore = signalStore(
               op: 'lt'
             }]
           }
+
+          // Load total amount for selected range
+          state.selectedRangeAmount = await api.getSalesAmount(start, end);
         } 
 
         patchState(store, state);
         store.load();
       },
       async loadTodaySalesAmount() {
-        const today = getStrDateTime(new Date());
-        const tomorrow = getStrDateTime(datePlusDays(new Date(), 1));
-        const todaySalesAmount = await api.getSalesAmount(today, tomorrow);
-        patchState(store, { todaySalesAmount });
-      }
+        const todayDate = new Date();
+        const today = getStrDateTime(todayDate);
+        const tomorrow = getStrDateTime(datePlusDays(todayDate, 1));
+        patchState(store, { todaySalesAmount: await api.getSalesAmount(today, tomorrow) });
+      },
     }
   }),
   withHooks({

@@ -47,17 +47,15 @@ import { MODAL_FORM_STORE } from "../shared/with-crud-modal-form";
       </nz-input-group>
       
       <div style="display: flex; justify-content: space-between;">
-      
-
-      <nz-button-group>
-        <button nz-button nzType="default" disabled>
-          <nz-icon nzType="import" />
-          Importar
-        </button>
-        <button nz-button nz-dropdown [nzDropdownMenu]="exportMenu" nzPlacement="bottomRight" disabled>
-          <nz-icon nzType="export" /> Exportar
-        </button>
-      </nz-button-group>
+        <nz-button-group>
+          <button nz-button nzType="default" disabled>
+            <nz-icon nzType="import" />
+            Importar
+          </button>
+          <button nz-button nz-dropdown [nzDropdownMenu]="exportMenu" nzPlacement="bottomRight" disabled>
+            <nz-icon nzType="export" /> Exportar
+          </button>
+        </nz-button-group>
       </div>
     </div>
 

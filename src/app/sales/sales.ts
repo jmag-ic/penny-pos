@@ -6,6 +6,7 @@ import { NzButtonModule } from "ng-zorro-antd/button";
 import { NzIconModule } from "ng-zorro-antd/icon";
 import { NzDropDownModule } from "ng-zorro-antd/dropdown";
 import { NzFormModule } from "ng-zorro-antd/form";
+import { NzAlertModule } from 'ng-zorro-antd/alert';
 import { Formatter } from "../shared/formatter";
 import { CRUD_TABLE_STORE, ItemMetadata } from "../shared/with-crud-table";
 import { SalesStore } from "./sales-store";
@@ -28,18 +29,40 @@ const SALE_DATE_FORMAT = 'dd/MM/yyyy HH:mm';
     NzIconModule,
     NzDropDownModule,
     NzFormModule,
+    NzAlertModule,
     PosCrudModalForm,
 ],
   template: `
     <div style="display: flex; justify-content: space-between; align-items: center;" class="mb-3">
-      <nz-range-picker
-        style="width: 300px;"
-        [nzShowTime]="false"
-        [nzFormat]="'dd-MMM-yyyy'"
-        [nzPlaceHolder]="['Fecha inicio', 'Fecha fin']"
-        [ngModel]="salesStore.dateRange()"
-        (ngModelChange)="onDateRangeChange($event)"
-      />
+      <div style="display: flex; align-items: center; gap: 4px;">
+        <nz-range-picker
+          style="width: 300px;"
+          [nzShowTime]="false"
+          [nzFormat]="'dd-MMM-yyyy'"
+          [nzPlaceHolder]="['Fecha inicio', 'Fecha fin']"
+          [nzAllowClear]="false"
+          [ngModel]="salesStore.dateRange()"
+          (ngModelChange)="onDateRangeChange($event)"
+        />
+        <button 
+          nz-button 
+          nzType="default" 
+          [disabled]="!salesStore.dateRange()"
+          (click)="clearDateRange()"
+        >
+          <nz-icon nzType="close" />
+        </button>
+      </div>
+
+       <!-- Total Amount Display -->
+      @if(salesStore.dateRange() && salesStore.selectedRangeAmount() > 0) {
+        <nz-alert
+          nzType="success"
+          nzMessage="Total: {{ formatter.currency(salesStore.selectedRangeAmount()) }}"
+          nzShowIcon="false"
+          style="height: 32px;"
+        ></nz-alert>
+      }
 
       <div style="display: flex; justify-content: space-between;">
         <nz-button-group>
@@ -92,6 +115,10 @@ export class Sales implements OnInit {
       return;
     }
     this.salesStore.setDateRange(range);
+  }
+
+  clearDateRange() {
+    this.salesStore.setDateRange(null);
   }
 
   columns = computed(() => [
